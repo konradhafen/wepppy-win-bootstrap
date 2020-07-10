@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from run_project import *
 
 
@@ -48,10 +49,24 @@ if __name__ == "__main__":
         df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
 
         df_wepp = df_wepp.loc[df_wepp['Y'] > 2011]
-        df_wepp = df_wepp.loc[df_wepp['OFE'] == 9]
+        df_wepp = df_wepp.loc[df_wepp['OFE'] == 19]
         df_hist = df_hist.loc[(df_hist['DATE'] >= start_date) & (df_hist['DATE'] <= end_date)]
         nse_val = nse(df_hist['MEAN_Q'].values, df_wepp['Qday'].values)
-        params.append(nse)
-        print('NSE', nse_val)
+        params.append(nse_val)
+
+        plt.figure()
+        plt.plot(df_hist['DATE'], df_hist['MEAN_Q'])
+        plt.plot(df_hist['DATE'], df_wepp['Qday'], alpha=0.5)
+        plot_text = "BF Storage: {bfs}\n" \
+                    "BF Recession Coef (k): {bfk}\n" \
+                    "Deep Percolation: {bfp}\n" \
+                    "BF Area: {bfa}\n" \
+                    "NSE: {nse}".format(bfs=params[0], bfk=params[1], bfp=params[2], bfa=params[3], nse=params[4])
+        plt.text(1.01, 0.9, plot_text, transform=plt.gca().transAxes)
+        plt.savefig(wd + "/export/result{bfs}-{bfk}-{bfp}-{bfa}.png".format(bfs=params[0], bfk=params[1],
+                                                                            bfp=params[2], bfa=params[3]))
+        # plt.show()
+
+        # print('NSE', nse_val)
 
     print(gw_params)
