@@ -1,5 +1,5 @@
 import sys
-from urllib import urlopen
+from urllib.request import urlopen
 import zipfile
 import argparse
 import os

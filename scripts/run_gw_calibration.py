@@ -19,9 +19,9 @@ if __name__ == "__main__":
     gw_params = [[200.0, 0.04, 0.0, 1.0001],
                  [150.0, 0.04, 0.0, 1.0001],
                  [100.0, 0.04, 0.0, 1.0001],
-                 [150.0, 0.02, 0.0, 1.0001],
-                 [100.0, 0.02, 0.0, 1.0001],
-                 [0.0, 0.0, 0.0, 1.0001]]
+                 [75.0, 0.04, 0.0, 1.0001],
+                 [50.0, 0.04, 0.0, 1.0001],
+                 [25.0, 0.04, 0.0, 1.0001]]
 
     args = parser.parse_args()
 
@@ -32,6 +32,10 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d'
     start_date = '2012-01-01'
     end_date = '2015-12-31'
+    df_hist = pd.read_csv(fn_hist)
+    df_hist['DATE'] = pd.to_datetime(df_hist['DATE'], format=datetime_format)  # convert dates to date type
+    df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
+    df_hist = df_hist.loc[(df_hist['DATE'] >= start_date) & (df_hist['DATE'] <= end_date)]
 
     for params in gw_params:
         print(params)
@@ -44,13 +48,8 @@ if __name__ == "__main__":
         df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
         df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
 
-        df_hist = pd.read_csv(fn_hist)
-        df_hist['DATE'] = pd.to_datetime(df_hist['DATE'], format=datetime_format)  # convert dates to date type
-        df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
-
         df_wepp = df_wepp.loc[df_wepp['Y'] > 2011]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == 19]
-        df_hist = df_hist.loc[(df_hist['DATE'] >= start_date) & (df_hist['DATE'] <= end_date)]
         nse_val = nse(df_hist['MEAN_Q'].values, df_wepp['Qday'].values)
         params.append(nse_val)
 
@@ -62,11 +61,14 @@ if __name__ == "__main__":
                     "Deep Percolation: {bfp}\n" \
                     "BF Area: {bfa}\n" \
                     "NSE: {nse}".format(bfs=params[0], bfk=params[1], bfp=params[2], bfa=params[3], nse=params[4])
-        plt.text(1.01, 0.9, plot_text, transform=plt.gca().transAxes)
-        plt.savefig(wd + "/export/result{bfs}-{bfk}-{bfp}-{bfa}.png".format(bfs=params[0], bfk=params[1],
-                                                                            bfp=params[2], bfa=params[3]))
-        # plt.show()
+        plt.text(0.8, 0.8, plot_text, transform=plt.gca().transAxes)
+        plt.savefig(wd + "/export/calibration_plots/result{bfs}-{bfk}-{bfp}-{bfa}.png".format(bfs=params[0],
+                                                                                              bfk=params[1],
+                                                                                              bfp=params[2],
+                                                                                              bfa=params[3]))
+        plt.close()
 
-        # print('NSE', nse_val)
-
+        print('NSE', nse_val)
+    df_out = pd.DataFrame(gw_params, columns=['storage', 'recession', 'percolation', 'area', 'nse'])
+    df_out.to_csv(wd + "/export/calibration_results.csv")
     print(gw_params)
