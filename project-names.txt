@@ -1,2 +1,2 @@
 WEPPCloudName, MyName, Description
-self-enclosed-spaniel, kh-hj-ws1-test, just a test project for hj andrews ws1
+prospective-bumper, hja-ws1-base, hj andrews watershed 1

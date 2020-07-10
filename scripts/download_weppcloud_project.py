@@ -27,16 +27,17 @@ if __name__ == "__main__":
     
     no_extract = args.no_extract
     remove = args.remove
-    
-    url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'
 
     if args.tenmeter:
         url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'
 
+    else:
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'
+
     fname = _join(destination, "{wd}.zip".format(wd=wd))
     print("attempting to download", wd)
 
-    response = urlopen('https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'.format(wd=wd))
+    response = urlopen(url)
     data = response.read()
     print('download complete')
 
