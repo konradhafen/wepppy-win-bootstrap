@@ -1,5 +1,5 @@
 import sys
-from urllib.request import urlopen
+from urllib import urlopen
 import zipfile
 import argparse
 import os
@@ -17,6 +17,8 @@ if __name__ == "__main__":
                         help='do not extract', action='store_true', default=False)    
     parser.add_argument('-r', '--remove',
                         help='remove zipfile after extracting', action='store_true', default=False)    
+    parser.add_argument('-t', '--tenmeter',
+                        help='10 m run instead of 30 m run', action='store_true', default=False)
     args = parser.parse_args()
 
     wd = args.run_id
@@ -27,6 +29,9 @@ if __name__ == "__main__":
     remove = args.remove
     
     url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'
+
+    if args.tenmeter:
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'
 
     fname = _join(destination, "{wd}.zip".format(wd=wd))
     print("attempting to download", wd)
