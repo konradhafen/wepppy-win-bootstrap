@@ -29,10 +29,10 @@ if __name__ == "__main__":
     remove = args.remove
 
     if args.tenmeter:
-        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'.format(wd=wd)
 
     else:
-        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'.format(wd=wd)
 
     fname = _join(destination, "{wd}.zip".format(wd=wd))
     print("attempting to download", wd)

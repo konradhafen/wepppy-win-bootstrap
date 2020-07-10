@@ -114,6 +114,74 @@ def oncomplete(wepprun):
     print('  {} completed run in {}s\n'.format(_id, elapsed_time))
 
     
+def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
+    assert not wd.endswith('.py')
+    assert exists(wd)
+
+    USE_MULTIPROCESSING = False
+    if numcpu > 1:
+        USE_MULTIPROCESSING = True
+
+    print('project run_id', wd)
+
+    runs_dir = _join(wd, 'wepp/runs')
+    output_dir = _join(wd, 'wepp/output')
+
+    assert exists(runs_dir)
+    assert exists(output_dir)
+
+    gwcoeff_prep(runs_dir, gwstorage=gwcoeff[0], bfcoeff=gwcoeff[1], dscoeff=gwcoeff[2], bfthreshold=gwcoeff[3])
+
+    hillslope_runs = glob(_join(runs_dir, 'p*.run'))
+    hillslope_runs = [run for run in hillslope_runs if 'pw' not in run]
+
+    print('cleaning output dir')
+    if exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.mkdir(output_dir)
+
+    if USE_MULTIPROCESSING:
+        pool = ThreadPoolExecutor(NCPU)
+        futures = []
+
+    for hillslope_run in hillslope_runs:
+
+        run_fn = _split(hillslope_run)[-1]
+        wepp_id = run_fn.replace('p', '').replace('.run', '')
+        assert isint(wepp_id), wepp_id
+
+        if USE_MULTIPROCESSING:
+            futures.append(pool.submit(lambda p: run_hillslope(*p), (int(wepp_id), runs_dir)))
+            futures[-1].add_done_callback(oncomplete)
+        else:
+            status, _id, elapsed_time = run_hillslope(int(wepp_id), runs_dir)
+            assert status
+            print('  {} completed run in {}s\n'.format(_id, elapsed_time))
+
+    if USE_MULTIPROCESSING:
+        wait(futures, return_when=FIRST_EXCEPTION)
+
+    run_watershed(runs_dir, output_dir)
+    print('completed watershed run')
+
+    totwatsed_pl = _join(output_dir, 'correct_daily_hillslopes.pl')
+    if exists(totwatsed_pl):
+        os.remove(totwatsed_pl)
+
+    shutil.copyfile(daily_hillslopes_pl_path, totwatsed_pl)
+    shutil.copyfile("../bin/ls.bat", _join(output_dir, "ls.bat"))
+    shutil.copyfile("../bin/rm.bat", _join(output_dir, "rm.bat"))
+
+    cmd = [perl_exe, 'correct_daily_hillslopes.pl']
+    _log = open(_join(output_dir, 'correct_daily_hillslopes.log'), 'w')
+
+    p = subprocess.Popen(cmd, stdout=_log, stderr=_log, cwd=output_dir)
+    p.wait()
+    _log.close()
+
+    print('done')
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('wd', type=str,   
