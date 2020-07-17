@@ -16,12 +16,21 @@ if __name__ == "__main__":
     parser.add_argument('wd', type=str,
                         help='path of project')
 
-    gw_params = [[200.0, 0.04, 0.0, 1.0001],
-                 [150.0, 0.04, 0.0, 1.0001],
-                 [100.0, 0.04, 0.0, 1.0001],
-                 [75.0, 0.04, 0.0, 1.0001],
-                 [50.0, 0.04, 0.0, 1.0001],
-                 [25.0, 0.04, 0.0, 1.0001]]
+    gw_params = [[200, 0.07, 0.01, 1],
+                 [200, 0.07, 0.1, 1],
+                 [200, 0.07, 0, 1],
+                 [200, 0.06, 0.01, 1],
+                 [200, 0.06, 0.1, 1],
+                 [200, 0.06, 0, 1],
+                 [200, 0.05, 0.01, 1],
+                 [200, 0.05, 0.1, 1],
+                 [200, 0.05, 0, 1],
+                 [200, 0.04, 0.01, 1],
+                 [200, 0.04, 0.1, 1],
+                 [200, 0.04, 0, 1],
+                 [200, 0.03, 0.01, 1],
+                 [200, 0.03, 0.1, 1],
+                 [200, 0.03, 0, 1]]
 
     args = parser.parse_args()
 
@@ -39,7 +48,7 @@ if __name__ == "__main__":
 
     for params in gw_params:
         print(params)
-        run_project(wd, gwcoeff=params)
+        run_project(wd, numcpu=8, gwcoeff=params)
         fn_wepp = wd + '/wepp/output/chnwb.txt'
 
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
@@ -47,6 +56,7 @@ if __name__ == "__main__":
         df_wepp.columns = colnames_units.columns
         df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
         df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+        print('WEPP metrics:', df_wepp['Qday'].min(), df_wepp['Qday'].max(), df_wepp['Qday'].mean())
 
         df_wepp = df_wepp.loc[df_wepp['Y'] > 2011]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == 19]
@@ -58,17 +68,16 @@ if __name__ == "__main__":
         plt.plot(df_hist['DATE'], df_wepp['Qday'], alpha=0.5)
         plot_text = "BF Storage: {bfs}\n" \
                     "BF Recession Coef (k): {bfk}\n" \
-                    "Deep Percolation: {bfp}\n" \
+                    "Deep Seepage: {bfp}\n" \
                     "BF Area: {bfa}\n" \
                     "NSE: {nse}".format(bfs=params[0], bfk=params[1], bfp=params[2], bfa=params[3], nse=params[4])
-        plt.text(0.8, 0.8, plot_text, transform=plt.gca().transAxes)
+        plt.text(0.7, 0.75, plot_text, transform=plt.gca().transAxes)
         plt.savefig(wd + "/export/calibration_plots/result{bfs}-{bfk}-{bfp}-{bfa}.png".format(bfs=params[0],
                                                                                               bfk=params[1],
                                                                                               bfp=params[2],
                                                                                               bfa=params[3]))
-        plt.close()
 
         print('NSE', nse_val)
-    df_out = pd.DataFrame(gw_params, columns=['storage', 'recession', 'percolation', 'area', 'nse'])
+    df_out = pd.DataFrame(gw_params, columns=['storage', 'bk', 'ds', 'area', 'nse'])
     df_out.to_csv(wd + "/export/calibration_results.csv")
-    print(gw_params)
+    print(df_out)
