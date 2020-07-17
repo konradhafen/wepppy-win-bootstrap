@@ -1,2 +1,0 @@
-WEPPCloudName, MyName, Description
-prospective-bumper, hja-ws1-base, hj andrews watershed 1
