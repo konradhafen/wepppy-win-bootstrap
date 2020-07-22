@@ -6,6 +6,51 @@ import os
 from os.path import exists
 from os.path import join as _join
 
+
+def download_weppcloud_project(run_id, destination, extract=True, remove=True, tenmeter=True):
+    """
+
+    Args:
+        run_id:
+        destination:
+        extract:
+        remove:
+        tenmeter:
+
+    Returns:
+
+    """
+    if tenmeter:
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'.format(wd=run_id)
+    else:
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'.format(wd=run_id)
+
+    fname = _join(destination, "{wd}.zip".format(wd=run_id))
+    print("attempting to download", run_id)
+
+    response = urlopen(url)
+    data = response.read()
+    print('download complete')
+
+    print('saving archive')
+    if exists(fname):
+        os.remove(fname)
+
+    # Write data to file
+    file_ = open(fname, 'wb')
+    file_.write(data)
+    file_.close()
+
+    if extract:
+        print('extracting archive')
+        zip_ref = zipfile.ZipFile(fname, 'r')
+        zip_ref.extractall(_join(destination, run_id))
+        zip_ref.close()
+
+    if remove:
+        os.remove(fname)
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
