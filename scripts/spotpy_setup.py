@@ -1,5 +1,6 @@
 import spotpy
 import pandas as pd
+import logging
 from run_project import *
 
 
@@ -17,12 +18,14 @@ class SpotpySetup(object):
             obs:
             date_format:
         """
+        self.logger = logging.getLogger('spotpy_setup')
+        self.logger.setLevel(logging.INFO)
         self.proj_dir = proj_dir
-        print('project directory', self.proj_dir)
+        self.logger.info('project directory ' + str(self.proj_dir))
         self.start_date = start_date
         self.end_date = end_date
         self.obs = self.process_observations(obs)
-        print('obs shape', self.obs.shape)
+        self.logger.info('obs shape ' + str(self.obs.shape))
         self.params = [spotpy.parameter.Uniform('s', 0, 500, 50, 200),
                        spotpy.parameter.Uniform('bk', 0.001, 0.1, 0.01, 0.04),
                        spotpy.parameter.Uniform('ds', 0.001, 0.1, 0.01, 0.01),
@@ -46,7 +49,7 @@ class SpotpySetup(object):
         Returns:
 
         """
-        print('in objective function', type(simulation), type(evaluation))
+        self.logger.info('in objective function ' + str(type(simulation)) + str(type(evaluation)))
         objectivefunction = spotpy.objectivefunctions.nashsutcliffe(evaluation, simulation)
         return objectivefunction
 
@@ -81,8 +84,9 @@ class SpotpySetup(object):
         Returns:
 
         """
-        print('running simulation', vector)
-        run_project(self.proj_dir, numcpu=1, gwcoeff=vector)
+        self.logger.info('running simulation ' + str(vector))
+        result = run_project(self.proj_dir, numcpu=1, gwcoeff=vector)
+        self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
         colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)

@@ -181,6 +181,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
     _log.close()
 
     print('done')
+    return True
 
 
 if __name__ == "__main__":
