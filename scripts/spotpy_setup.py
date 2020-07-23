@@ -35,6 +35,10 @@ class SpotpySetup(object):
         """
         return self.obs
 
+    def objectivefunciton(self, simulation, evaluation):
+        objectivefunction = spotpy.objectivefunctions.nashsutcliffe(evaluation, simulation)
+        return objectivefunction
+
     def parameters(self):
         """
 
