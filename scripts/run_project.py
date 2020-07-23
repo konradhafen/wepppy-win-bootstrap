@@ -116,6 +116,7 @@ def oncomplete(wepprun):
     
 def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
     assert not wd.endswith('.py')
+    print('Worknig directory in run_project', wd)
     assert exists(wd)
 
     USE_MULTIPROCESSING = False
