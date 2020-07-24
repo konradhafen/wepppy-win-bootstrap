@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     wd = args.wd
-    fn_hist = r'C:\konrad\projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'  # daily discharge for all gaged watersheds
-    # fn_hist = r'E:\konrad\Projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'
+    # fn_hist = r'C:\konrad\projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'  # daily discharge for all gaged watersheds
+    fn_hist = r'E:\konrad\Projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'
     # ws_code = 'GSWS01'  # watershed of interest
     ws_code = args.site_code
     datetime_format = '%Y-%m-%d'

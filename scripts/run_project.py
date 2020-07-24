@@ -176,6 +176,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
     cmd = [perl_exe, 'correct_daily_hillslopes.pl']
     _log = open(_join(output_dir, 'correct_daily_hillslopes.log'), 'w')
 
+    print('OUTPUT DIRECTORY:', output_dir, _log, cmd, os.getcwd())
     p = subprocess.Popen(cmd, stdout=_log, stderr=_log, cwd=output_dir)
     p.wait()
     _log.close()
