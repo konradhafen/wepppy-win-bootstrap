@@ -85,7 +85,7 @@ class SpotpySetup(object):
 
         """
         self.logger.info('running simulation ' + str(vector))
-        result = run_project(self.proj_dir, numcpu=1, gwcoeff=vector)
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=vector)
         self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)

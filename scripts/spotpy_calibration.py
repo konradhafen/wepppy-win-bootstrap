@@ -15,7 +15,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     wd = args.wd
     fn_hist = r'C:\konrad\projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'  # daily discharge for all gaged watersheds
-    fn_hist = r'E:\konrad\Projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'
+    # fn_hist = r'E:\konrad\Projects\usgs\hjandrews\data\discharge\HF00402_v12.csv'
     # ws_code = 'GSWS01'  # watershed of interest
     ws_code = args.site_code
     datetime_format = '%Y-%m-%d'
@@ -29,5 +29,5 @@ if __name__ == "__main__":
     df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
 
     spot_setup = SpotpySetup(wd, start_date, end_date, df_hist)
-    sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv', parallel='mpi')
+    sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv')
     sampler.sample(args.reps)
