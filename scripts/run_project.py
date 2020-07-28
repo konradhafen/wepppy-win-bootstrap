@@ -131,6 +131,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
     assert exists(runs_dir)
     assert exists(output_dir)
 
+    print('GW Coefficients:', gwcoeff[0], gwcoeff[1], gwcoeff[2], gwcoeff[3])
     gwcoeff_prep(runs_dir, gwstorage=gwcoeff[0], bfcoeff=gwcoeff[1], dscoeff=gwcoeff[2], bfthreshold=gwcoeff[3])
 
     hillslope_runs = glob(_join(runs_dir, 'p*.run'))
@@ -176,7 +177,6 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
     cmd = [perl_exe, 'correct_daily_hillslopes.pl']
     _log = open(_join(output_dir, 'correct_daily_hillslopes.log'), 'w')
 
-    print('OUTPUT DIRECTORY:', output_dir, _log, cmd, os.getcwd())
     p = subprocess.Popen(cmd, stdout=_log, stderr=_log, cwd=output_dir)
     p.wait()
     _log.close()

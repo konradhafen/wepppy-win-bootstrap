@@ -21,7 +21,7 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d'
     start_date = args.start_date
     end_date = args.end_date
-    output = wd + '/export/calibration_results.csv'
+    output = wd + '/export/calibration_results_withks.csv'
     # start_date = '2012-01-01'
     # end_date = '2015-12-31'
     df_hist = pd.read_csv(fn_hist)
