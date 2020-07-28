@@ -27,8 +27,8 @@ class SpotpySetup(object):
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
         self.params = [spotpy.parameter.Uniform('s', 0, 500, 50, 200),
-                       spotpy.parameter.Uniform('bk', 0.001, 0.1, 0.01, 0.04),
-                       spotpy.parameter.Uniform('ds', 0.0, 0.1, 0.01, 0.01),
+                       spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.04),
+                       spotpy.parameter.Uniform('ks', 0.0, 0.1, 0.01, 0.01),
                        spotpy.parameter.Uniform('ba', 1.0, 1.0, 1.0, 1.0)]
 
     def evaluation(self):
