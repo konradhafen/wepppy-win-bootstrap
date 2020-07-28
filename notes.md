@@ -15,3 +15,7 @@ because even the worst parameter combination produced NSE > 0.3 for daily values
 ### Deep seepage coefficient
 Added deep seepage coefficient (ks) to calibration. Values ranged from 0.0-0.1. 
 Kept S and kb same as above.
+
+Best param combo was S = 43.3, kb = 0.0406, ks=0.068. NSE=0.596
+
+Worst param combo was S = 158.5, kb = 0.061, ks = 0.0005. NSE=0.363
