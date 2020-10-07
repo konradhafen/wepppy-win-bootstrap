@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from run_project import *
-
+import os
 
 def nse(obs, sim):
     top = np.sum((sim - obs) ** 2)
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
         print('NSE', nse_val)
     df_out = pd.DataFrame(gw_params, columns=['storage', 'bk', 'ds', 'area', 'nse'])
-    df_out.to_csv(wd + "/export/calibration_results.csv")
+    df_out.to_csv(os.path.join(wd, "/export/calibration_results.csv"))
     print(df_out)
