@@ -1,0 +1,37 @@
+####################################################################################################################################################
+# For the .sol file
+####################################################################################################################################################
+# 7 = number of soil layers
+# 0.16 = Albedo
+# 0.75 = Initial saturation of soil
+# 4649000.00 interrill erodibility
+# Rill erodibility
+# Critical shear stress of soil
+# 0.0 = effective ksat of soil, just leave it, now uses ksat for first layers
+# colums with 7 rows: Depth to layer bottom (mm), bulk density (g/cm^3), ksat (mm/hr), anisotropy (ratio of lateral to vertical ksat), field capacity (Frac), wilting point (not corrected for rocks), percent sand, percent clay, percent organic matter, cation exchange capacity, percent rock content (>2mm)
+# Last line: index (leave at 1), thickness of restrictive layer (meters, bedrock, etc), vertical conductivity of restrictive layer (mm/hr)
+# Try changing anisotropy factor and conductivity of restrive layer
+# Anisotropy factor will change recession limb shape. Conductivity of restrictive layer will change magnitude of peaks
+# Example file below this line
+
+Any comments:
+1 1
+'Aschoff-Kinney complex, 40 to 85 percent slopes, south-facing'		'SPM'	7	0.1600	0.7500	4649000.00	0.0050	2.5450	0.0000
+	   80.000	    0.20	1440.0000	 10.0	   0.2420	   0.1145	  66.80	   7.00	  75.00	  11.30	  55.50
+	  100.000	    0.20	1440.0000	 10.0	   0.2420	   0.1145	  66.80	   7.00	  75.00	  11.30	  55.50
+	  250.000	    0.85	 270.0000	 10.0	   0.6040	   0.3020	  42.00	  19.00	   6.00	  40.00	  56.80
+	  410.000	    0.85	 270.0000	 10.0	   0.3720	   0.1500	  40.00	  20.00	   5.00	  40.00	  56.80
+	  690.000	    0.95	 144.0000	  1.0	   0.3240	   0.0900	  35.00	  20.00	   2.50	  15.00	  73.00
+	  970.000	    1.20	 144.0000	  1.0	   0.2840	   0.0940	  35.00	  20.00	   0.75	  11.50	  73.00
+	 1630.000	    1.20	 144.0000	  1.0	   0.2840	   0.0880	  35.00	  18.00	   0.75	  10.50	  72.50
+1 10000.0 144.00000
+
+####################################################################################################################################################
+# For the pmetpara.txt file
+####################################################################################################################################################
+#penman-monteith parameters 
+#2 = number of veg types, 0.95 = ratio of actual to potential ET (crop coefficient at peak growth), 0.8=percent of plant available water before ET limited by soil moisture
+#Example file below this line
+2
+For_5352,0.95,0.8,0,-
+Shr_6877,0.95,0.8,1,-
