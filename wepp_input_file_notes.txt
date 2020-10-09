@@ -10,7 +10,7 @@
 # 0.0 = effective ksat of soil, just leave it, now uses ksat for first layers
 # colums with 7 rows: Depth to layer bottom (mm), bulk density (g/cm^3), ksat (mm/hr), anisotropy (ratio of lateral to vertical ksat), field capacity (Frac), wilting point (not corrected for rocks), percent sand, percent clay, percent organic matter, cation exchange capacity, percent rock content (>2mm)
 # Last line: index (leave at 1), thickness of restrictive layer (meters, bedrock, etc), vertical conductivity of restrictive layer (mm/hr)
-# Try changing anisotropy factor and conductivity of restrive layer
+# Try changing anisotropy factor and conductivity of restrictive layer
 # Anisotropy factor will change recession limb shape. Conductivity of restrictive layer will change magnitude of peaks
 # Example file below this line
 
