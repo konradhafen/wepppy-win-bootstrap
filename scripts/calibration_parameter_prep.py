@@ -20,9 +20,9 @@ def soil_params(fn, kvmod=2.0, amod=2.0, comment_id="#"):
                     dat[nline] = '\t' + '\t'.join(line_dat) + '\n'
                     ksat_pass = True
                 elif ksat_pass and len(line_dat) == 3:
-                    print(dat[nline])
+                    print('hopefully this is restrictive layer data', dat[nline])
                     line_dat[2] = str(float(line_dat[2]) * kvmod)
-                    dat[nline] = '\t' + '\t'.join(line_dat) + '\n'
+                    dat[nline] = '\t'.join(line_dat) + '\n'
                     print(dat[nline])
             nline += 1
         with open(fn_mod, 'w') as fo:
@@ -30,4 +30,4 @@ def soil_params(fn, kvmod=2.0, amod=2.0, comment_id="#"):
     return
 
 fn = r"E:\konrad\Projects\usgs\hjandrews\wepp\hja-ws1-base\wepp\runs\p1.sol"
-soil_params(fn)
+soil_params(fn, kvmod=0.5)

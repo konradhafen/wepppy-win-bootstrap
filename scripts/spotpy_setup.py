@@ -26,10 +26,10 @@ class SpotpySetup(object):
         self.end_date = end_date
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('s', 0, 500, 50, 200),
-                       spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.04),
+        self.params = [spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.04),
                        spotpy.parameter.Uniform('ks', 0.0, 0.1, 0.01, 0.01),
-                       spotpy.parameter.Uniform('ba', 1.0, 1.0, 1.0, 1.0)]
+                       spotpy.parameter.Uniform('ksat_fact', 0.1, 10.0, 0.1, 1.0),
+                       spotpy.parameter.Uniform('kr', 50.0, 1000.0, 20.0, 144.0)]
 
     def evaluation(self):
         """
@@ -85,7 +85,8 @@ class SpotpySetup(object):
 
         """
         self.logger.info('running simulation ' + str(vector))
-        result = run_project(self.proj_dir, numcpu=8, gwcoeff=vector)
+        gwcoeffs = [200.0, vector[0], vector[1], 1.0001]  # initial storage, baseflow recession, deep seepage, minimum area
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gwcoeffs)
         self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
@@ -98,3 +99,28 @@ class SpotpySetup(object):
         df_wepp = df_wepp.loc[(df_wepp['date'] >= self.start_date) & (df_wepp['date'] <= self.end_date)]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
         return df_wepp['Qday'].to_numpy()
+
+
+class SpotpySetupAnnual():
+    """
+
+    """
+    def __init__(self, proj_dir, start_date, end_date, obs, date_format='%Y-%m-%d'):
+        """
+
+        Args:
+            proj_dir:
+            start_date:
+            end_date:
+            obs:
+            date_format:
+        """
+        self.logger = logging.getLogger('spotpy_setup')
+        self.logger.setLevel(logging.INFO)
+        self.proj_dir = proj_dir
+        self.logger.info('project directory ' + str(self.proj_dir))
+        self.start_date = start_date
+        self.end_date = end_date
+        self.obs = self.process_observations(obs)
+        self.logger.info('obs shape ' + str(self.obs.shape))
+        self.params = [spotpy.parameter.Uniform('kc', 0.85, 1.15, 0.01, 0.95)]
