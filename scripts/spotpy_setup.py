@@ -105,7 +105,7 @@ class SpotpySetupAnnual():
     """
 
     """
-    def __init__(self, proj_dir, start_date, end_date, obs, date_format='%Y-%m-%d'):
+    def __init__(self, proj_dir, start_year, end_year, obs, date_format='%Y-%m-%d'):
         """
 
         Args:
@@ -119,8 +119,8 @@ class SpotpySetupAnnual():
         self.logger.setLevel(logging.INFO)
         self.proj_dir = proj_dir
         self.logger.info('project directory ' + str(self.proj_dir))
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_year = start_year
+        self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
         self.params = [spotpy.parameter.Uniform('kc', 0.85, 1.15, 0.01, 0.95)]
