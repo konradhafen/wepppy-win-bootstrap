@@ -16,7 +16,7 @@ def water_year_yield(df, date_col='DATE', q_col='MEAN_Q'):
         start_date = str(years[i]) + '-10-01'
         end_date = str(years[i+1]) + '-09-30'
         tmp_dat = df.loc[(df[date_col] >= start_date) & (df[date_col] <= end_date)]
-        vol.append(tmp_dat[q_col].sum() * 15.0 * 60 * 0.0283168)  # convert from cfs to cubic meters
+        vol.append(tmp_dat[q_col].sum() * 3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
         # print(years[i], tmp_dat.shape, vol[-1])
 
     df_wy = pd.DataFrame({'year': years[:-1], 'yield_m3': vol})
@@ -31,7 +31,7 @@ def water_year_yield_doy(df, date_col='date', v_col='Qvol'):
         end_date = str(years[i+1]) + '-09-30'
         tmp_dat = df.loc[(df[date_col] >= start_date) & (df[date_col] <= end_date)]
         # print('number of day in wy:', tmp_dat.shape)
-        vol.append(tmp_dat[v_col].sum())  # convert from cfs to cubic meters
+        vol.append(tmp_dat[v_col].sum())
         # print(years[i], tmp_dat.shape, vol[-1])
 
     df_wy = pd.DataFrame({'year': years[:-1], 'yield_m3': vol})
@@ -78,14 +78,17 @@ if __name__ == "__main__":
     df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
     print('mean daily Q from WEPP')
     print(df_wepp['Qday'])
-    df_mod = water_year_yield_doy(df_wepp)
+    df_mod = water_year_yield_doy(df_wepp, 'date', 'Qvol')
 
     df_hist = df_hist.loc[(df_hist['year'] >= start_year) & (df_hist['year'] <= end_year)]
     df_mod = df_mod.loc[(df_mod['year'] >= start_year) & (df_mod['year'] <= end_year)]
 
+    print('observations')
     print(df_hist)
+    print('simulations')
     print(df_mod)
     print(np.corrcoef(df_hist['yield_m3'].to_numpy(), df_mod['yield_m3'].to_numpy()))
+    print('annual pbias')
     print(pbias(df_mod['yield_m3'].to_numpy(), df_hist['yield_m3'].to_numpy()))
 
     df_hist_q['year'] = pd.DatetimeIndex(df_hist_q['DATE']).year
