@@ -1,5 +1,6 @@
 import spotpy
 import pandas as pd
+import numpy as np
 import logging
 from run_project import *
 
@@ -123,4 +124,17 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.85, 1.15, 0.01, 0.95)]
+        self.params = [spotpy.parameter.Uniform('kc', 0.85, 1.15, 0.01, 0.95)]  # crop coefficient
+
+    def evaluation(self):
+        return self.obs
+
+    def objectivefunction(self, simulation, evaluation):
+        objectivefunction = spotpy.objectivefunctions.pbias(evaluation, simulation)
+        return objectivefunction
+
+    def process_observations(self):
+        return
+
+    def simulation(self):
+        return

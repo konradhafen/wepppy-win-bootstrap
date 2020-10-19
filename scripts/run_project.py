@@ -114,7 +114,7 @@ def oncomplete(wepprun):
     print('  {} completed run in {}s\n'.format(_id, elapsed_time))
 
     
-def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
+def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8]):
     assert not wd.endswith('.py')
     print('Worknig directory in run_project', wd)
     assert exists(wd)
@@ -133,6 +133,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001]):
 
     print('GW Coefficients:', gwcoeff[0], gwcoeff[1], gwcoeff[2], gwcoeff[3])
     gwcoeff_prep(runs_dir, gwstorage=gwcoeff[0], bfcoeff=gwcoeff[1], dscoeff=gwcoeff[2], bfthreshold=gwcoeff[3])
+    pmetpara_prep(runs_dir, pmet[0], pmet[1])
 
     hillslope_runs = glob(_join(runs_dir, 'p*.run'))
     hillslope_runs = [run for run in hillslope_runs if 'pw' not in run]
