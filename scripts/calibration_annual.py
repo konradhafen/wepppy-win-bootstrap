@@ -77,7 +77,7 @@ if __name__ == "__main__":
     df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
     df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
     print('mean daily Q from WEPP')
-    print(df_wepp['Qday'])
+    # print(df_wepp['Qday'])
     df_mod = water_year_yield_doy(df_wepp, 'date', 'Qvol')
 
     df_hist = df_hist.loc[(df_hist['year'] >= start_year) & (df_hist['year'] <= end_year)]

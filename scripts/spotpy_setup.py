@@ -136,5 +136,29 @@ class SpotpySetupAnnual():
     def process_observations(self):
         return
 
-    def simulation(self):
-        return
+    def simulation(self, vector):
+        self.logger.info('running simulation ' + str(vector))
+        pmet_coeffs = [vector[0], 0.8]
+        result = run_project(self.proj_dir, numcpu=8, pmet=pmet_coeffs)
+        self.logger.info('simulation complete ' + str(result))
+        fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
+        df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
+        colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)
+        df_wepp.columns = colnames_units.columns
+        df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
+        df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
+        df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+
+        df_wepp = df_wepp.loc[(df_wepp['date'] >= self.start_date) & (df_wepp['date'] <= self.end_date)]
+        df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
+
+        df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
+        # print(df_wepp['date'])
+        # df_wepp['date'] = df_wepp['date'].dt.strftime(datetime_format)
+        # print(df_wepp['date'])
+        df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
+        df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+        df_mod = water_year_yield_doy(df_wepp, 'date', 'Qvol')
+
+        df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
+        return df_mod['yield_m3'].to_numpy()
