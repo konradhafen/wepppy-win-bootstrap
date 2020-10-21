@@ -5,6 +5,18 @@ import logging
 from run_project import *
 
 
+def water_year_yield(df, date_col='DATE', q_col='MEAN_Q', conv=1.0):
+    years = pd.DatetimeIndex(df[date_col]).year.unique()
+    vol = []
+    for i in range(len(years) - 1):
+        start_date = str(years[i]) + '-10-01'
+        end_date = str(years[i+1]) + '-09-30'
+        tmp_dat = df.loc[(df[date_col] >= start_date) & (df[date_col] <= end_date)]
+        vol.append(tmp_dat[q_col].sum() * conv)  # sum and convert units
+    df_wy = pd.DataFrame({'year': years[:-1], 'yield_m3': vol})
+    return df_wy
+
+
 class SpotpySetup(object):
     """
 
@@ -133,8 +145,10 @@ class SpotpySetupAnnual():
         objectivefunction = spotpy.objectivefunctions.pbias(evaluation, simulation)
         return objectivefunction
 
-    def process_observations(self):
-        return
+    def process_observations(self, obs, col_name='yield_m3'):
+        evaluation = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
+        evaluation = evaluation.loc[(evaluation['year'] >= self.start_year) & (evaluation['year'] <= self.end_year)]
+        return evaluation[col_name].to_numpy()
 
     def simulation(self, vector):
         self.logger.info('running simulation ' + str(vector))
@@ -146,19 +160,19 @@ class SpotpySetupAnnual():
         colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)
         df_wepp.columns = colnames_units.columns
         df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
-        df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
-        df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+        # df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
+        # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
 
         df_wepp = df_wepp.loc[(df_wepp['date'] >= self.start_date) & (df_wepp['date'] <= self.end_date)]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
 
-        df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
+        # df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
         # print(df_wepp['date'])
         # df_wepp['date'] = df_wepp['date'].dt.strftime(datetime_format)
         # print(df_wepp['date'])
         df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
-        df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
-        df_mod = water_year_yield_doy(df_wepp, 'date', 'Qvol')
+        # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+        df_mod = water_year_yield(df_wepp, 'date', 'Qvol')
 
-        df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
+        # df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
         return df_mod['yield_m3'].to_numpy()
