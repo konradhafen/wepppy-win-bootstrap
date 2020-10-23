@@ -41,15 +41,21 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d'
     start_year = int(args.start_year)
     end_year = int(args.end_year)
-    output = wd + '/export/calibration_results_annual.csv'
+    output = wd + '/export/calibration_results_annual'
     # start_date = '2012-01-01'
     # end_date = '2015-12-31'
     df_hist = pd.read_csv(fn_hist)
     df_hist['DATE'] = pd.to_datetime(df_hist['DATE'], format=datetime_format)  # convert dates to date type
     df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
-    spot_setup = SpotpySetupAnnual(wd, 2005, 2015, df_hist)
-    sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv')
+    spot_setup = SpotpySetupAnnual(wd, start_year, end_year, df_hist)
+    # sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv')
+    sampler = spotpy.algorithms.mc(spot_setup)
     sampler.sample(args.reps)
+    spot_setup.database.close()
+    results = sampler.getdata()
+    np.save(output + '.npy', results)
+    print('results', type(results))
+    print(results)
 
 
 

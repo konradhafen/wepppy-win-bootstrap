@@ -2,6 +2,7 @@ import spotpy
 import pandas as pd
 import numpy as np
 import logging
+import os
 from run_project import *
 
 
@@ -86,7 +87,7 @@ class SpotpySetup(object):
 
         """
         obs = obs.loc[(obs[date_col] >= self.start_date) & (obs[date_col] <= self.end_date)]
-        return obs[q_col].to_numpy()
+        return obs[q_col].to_numpy(np.float32)
 
     def simulation(self, vector):
         """
@@ -100,7 +101,7 @@ class SpotpySetup(object):
         self.logger.info('running simulation ' + str(vector))
         gwcoeffs = [200.0, vector[0], vector[1], 1.0001]  # initial storage, baseflow recession, deep seepage, minimum area
         result = run_project(self.proj_dir, numcpu=8, gwcoeff=gwcoeffs)
-        self.logger.info('simulation complete ' + str(result))
+        self.logger.info('simulation complete')
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
         colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)
@@ -136,19 +137,30 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.85, 1.15, 0.01, 0.95)]  # crop coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 0.75, 1.5, 0.01, 0.95)]  # crop coefficient
+        self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
     def evaluation(self):
         return self.obs
 
     def objectivefunction(self, simulation, evaluation):
+        # self.logger.info('sim ' + str(simulation))
+        # self.logger.info('eval ' + str(evaluation))
         objectivefunction = spotpy.objectivefunctions.pbias(evaluation, simulation)
         return objectivefunction
+
+    def parameters(self):
+        return spotpy.parameter.generate(self.params)
 
     def process_observations(self, obs, col_name='yield_m3'):
         evaluation = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
         evaluation = evaluation.loc[(evaluation['year'] >= self.start_year) & (evaluation['year'] <= self.end_year)]
         return evaluation[col_name].to_numpy()
+
+    def save(self, objectivefunctions, parameter, simulations):
+        line = str(objectivefunctions)+','+str(parameter).strip('[]')+','+str(simulations.tolist()).strip('[]')+'\n'
+        self.logger.info('line' + line)
+        self.database.write(line)
 
     def simulation(self, vector):
         self.logger.info('running simulation ' + str(vector))
@@ -160,19 +172,10 @@ class SpotpySetupAnnual():
         colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)
         df_wepp.columns = colnames_units.columns
         df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
-        # df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
-        # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
-
-        df_wepp = df_wepp.loc[(df_wepp['date'] >= self.start_date) & (df_wepp['date'] <= self.end_date)]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
-
-        # df_wepp['date'] = pd.to_datetime(df_wepp['Y'] * 1000 + df_wepp['J'], format='%Y%j')
-        # print(df_wepp['date'])
-        # df_wepp['date'] = df_wepp['date'].dt.strftime(datetime_format)
-        # print(df_wepp['date'])
         df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
         # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
         df_mod = water_year_yield(df_wepp, 'date', 'Qvol')
+        df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
 
-        # df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
         return df_mod['yield_m3'].to_numpy()

@@ -132,6 +132,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8]
     assert exists(output_dir)
 
     print('GW Coefficients:', gwcoeff[0], gwcoeff[1], gwcoeff[2], gwcoeff[3])
+    print('Crop coefficient', pmet[0])
     gwcoeff_prep(runs_dir, gwstorage=gwcoeff[0], bfcoeff=gwcoeff[1], dscoeff=gwcoeff[2], bfthreshold=gwcoeff[3])
     pmetpara_prep(runs_dir, pmet[0], pmet[1])
 
