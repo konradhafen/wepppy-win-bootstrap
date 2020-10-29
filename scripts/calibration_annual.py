@@ -54,8 +54,9 @@ if __name__ == "__main__":
     spot_setup.database.close()
     results = sampler.getdata()
     np.save(output + '.npy', results)
-    print('results', type(results))
-    print(results)
+    # print('results', type(results))
+    # print(results)
+    # print(output + '.npy')
 
 
 

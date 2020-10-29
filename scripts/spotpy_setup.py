@@ -137,7 +137,7 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.75, 1.5, 0.01, 0.95)]  # crop coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 1.0, 1.0, 0.01, 1.0)]  # crop coefficient
         self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
     def evaluation(self):
@@ -153,8 +153,10 @@ class SpotpySetupAnnual():
         return spotpy.parameter.generate(self.params)
 
     def process_observations(self, obs, col_name='yield_m3'):
+        # self.logger.info(str(obs.head()))
         evaluation = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
         evaluation = evaluation.loc[(evaluation['year'] >= self.start_year) & (evaluation['year'] <= self.end_year)]
+        # self.logger.info(str(evaluation))
         return evaluation[col_name].to_numpy()
 
     def save(self, objectivefunctions, parameter, simulations):
@@ -177,5 +179,6 @@ class SpotpySetupAnnual():
         # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
         df_mod = water_year_yield(df_wepp, 'date', 'Qvol')
         df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
+        # self.logger.info(str(df_mod))
 
         return df_mod['yield_m3'].to_numpy()
