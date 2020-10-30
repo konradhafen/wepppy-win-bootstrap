@@ -100,6 +100,7 @@ class SpotpySetup(object):
         """
         self.logger.info('running simulation ' + str(vector))
         gwcoeffs = [200.0, vector[0], vector[1], 1.0001]  # initial storage, baseflow recession, deep seepage, minimum area
+        gwcoeffs = [200.0, 0.04, 0.0, 1.0001]  # hard-coded for testing, remove this for sensitivity and calibration
         result = run_project(self.proj_dir, numcpu=8, gwcoeff=gwcoeffs)
         self.logger.info('simulation complete')
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'

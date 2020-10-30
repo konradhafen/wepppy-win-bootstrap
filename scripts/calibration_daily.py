@@ -1,5 +1,7 @@
 import argparse
 import pandas as pd
+import numpy as np
+import os
 import spotpy
 from spotpy_setup import *
 
@@ -21,7 +23,8 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d'
     start_date = args.start_date
     end_date = args.end_date
-    output = wd + '/export/calibration_results_withks.csv'
+    output = os.path.join(wd, 'export/calibration_results_daily')
+    print("wd, output", wd, output)
     # start_date = '2012-01-01'
     # end_date = '2015-12-31'
     df_hist = pd.read_csv(fn_hist)
@@ -29,5 +32,8 @@ if __name__ == "__main__":
     df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
 
     spot_setup = SpotpySetup(wd, start_date, end_date, df_hist)
-    sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv')
+    sampler = spotpy.algorithms.mc(spot_setup, dbname=output + '.csv', dbformat='csv')
     sampler.sample(args.reps)
+    results = sampler.getdata()
+    np.save(output + '.npy', results)
+    np.save(output + '_eval.npy', spot_setup.evaluation())
