@@ -12,10 +12,11 @@ def change_soil_params(fn, anisotropy=None, kr=None, comment_id="#"):
         for line in dat:
             if not line.startswith(comment_id):
                 line_dat = list(line.strip().split())
-                if len(line_dat) == 11 and anisotropy is not None:
-                    line_dat[3] = str(anisotropy)
-                    dat[nline] = '\t' + '\t'.join(line_dat) + '\n'
+                if len(line_dat) == 11:
                     ksat_pass = True
+                    if anisotropy is not None:
+                        line_dat[3] = str(anisotropy)
+                        dat[nline] = '\t' + '\t'.join(line_dat) + '\n'
                 elif ksat_pass and len(line_dat) == 3 and kr is not None:
                     # print('hopefully this is restrictive layer data', dat[nline])
                     line_dat[2] = str(kr)
@@ -29,12 +30,12 @@ def change_soil_params(fn, anisotropy=None, kr=None, comment_id="#"):
 
 def soil_prep(wd, anisotropy=None, kr=None):
     comment_id = "#"
-    directory = os.fsencode(os.path.join(wd, '/wepp/runs'))
+    directory = os.fsencode(os.path.join(wd, 'wepp/runs'))
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         if filename.endswith(".sol"):
-            change_soil_params(fn, anisotropy, kr, comment_id)
+            change_soil_params(os.path.join(os.fsdecode(directory), filename), anisotropy, kr, comment_id)
 
 
-fn = r"E:\konrad\Projects\usgs\hjandrews\wepp\hja-ws1-base\wepp\runs\p1.sol"
-change_soil_params(fn, anisotropy=100.0, kr=1.0)
+# fn = r"E:\konrad\Projects\usgs\hjandrews\wepp\hja-ws1-base\wepp\runs\p1.sol"
+# change_soil_params(fn, anisotropy=100.0, kr=1.0)
