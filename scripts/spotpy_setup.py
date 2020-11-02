@@ -4,6 +4,7 @@ import numpy as np
 import logging
 import os
 from run_project import *
+from sol_prep import *
 
 
 def water_year_yield(df, date_col='DATE', q_col='MEAN_Q', conv=1.0):
@@ -138,7 +139,8 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 1.0, 1.0, 0.01, 1.0)]  # crop coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 1.0, 1.0, 0.01, 1.0),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 1.0, 1.0, 1.0, 1.0)]  # vertical conductivity of restrictive layer
         self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
     def evaluation(self):
@@ -168,6 +170,7 @@ class SpotpySetupAnnual():
     def simulation(self, vector):
         self.logger.info('running simulation ' + str(vector))
         pmet_coeffs = [vector[0], 0.8]
+        soil_prep(self.proj_dir, kr=vector[1])
         result = run_project(self.proj_dir, numcpu=8, pmet=pmet_coeffs)
         self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
