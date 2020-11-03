@@ -139,8 +139,8 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 1.0, 1.0, 0.01, 1.0),  # crop coefficient
-                       spotpy.parameter.Uniform('kr', 1.0, 1.0, 1.0, 1.0)]  # vertical conductivity of restrictive layer
+        self.params = [spotpy.parameter.Uniform('kc', 0.95, 0.95, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 0.005, 0.5, 0.001, 0.05)]  # vertical conductivity of restrictive layer
         self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
     def evaluation(self):
