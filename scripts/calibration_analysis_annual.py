@@ -19,7 +19,6 @@ f, ax = plt.subplots(nrow, ncol, sharex=False)
 for i in range(nrow):
     for j in range(ncol):
         index = i*ncol+j
-        print(index)
         ax[i, j].hist(dat_plt[:, index+1], range=xrange[index], bins=40)
         ax[i, j].set_xlabel(xlabs[index])
 plt.subplots_adjust(hspace=0.3)
