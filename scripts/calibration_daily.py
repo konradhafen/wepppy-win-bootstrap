@@ -35,5 +35,9 @@ if __name__ == "__main__":
     sampler = spotpy.algorithms.mc(spot_setup, dbname=output + '.csv', dbformat='csv')
     sampler.sample(args.reps)
     results = sampler.getdata()
+    if os.path.exists(output + '.npy'):
+        os.remove(output + '.npy')
     np.save(output + '.npy', results)
+    if os.path.exists(output + '_eval.npy'):
+        os.remove(output + '_eval.npy')
     np.save(output + '_eval.npy', spot_setup.evaluation())

@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import numpy as np
+import os
 import spotpy
 from spotpy_setup import *
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d'
     start_year = int(args.start_year)
     end_year = int(args.end_year)
-    output = wd + '/export/calibration_results_annual'
+    output = wd + '/export/calibration_results_annual_sens6p'
     # start_date = '2012-01-01'
     # end_date = '2015-12-31'
     df_hist = pd.read_csv(fn_hist)
@@ -53,7 +54,11 @@ if __name__ == "__main__":
     sampler.sample(args.reps)
     spot_setup.database.close()
     results = sampler.getdata()
+    if os.path.exists(output + '.npy'):
+        os.remove(output + '.npy')
     np.save(output + '.npy', results)
+    spotpy.analyser.plot_fast_sensitivity(results, number_of_sensitiv_pars=6)
+    spotpy.analyser.get_sensitivity_of_fast(results)
     # print('results', type(results))
     # print(results)
     # print(output + '.npy')

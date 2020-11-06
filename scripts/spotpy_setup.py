@@ -41,10 +41,11 @@ class SpotpySetup(object):
         self.end_date = end_date
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.04),
-                       spotpy.parameter.Uniform('ks', 0.0, 0.1, 0.01, 0.01),
-                       spotpy.parameter.Uniform('ksat_fact', 0.1, 10.0, 0.1, 1.0),
-                       spotpy.parameter.Uniform('kr', 50.0, 1000.0, 20.0, 144.0)]
+        self.params = [spotpy.parameter.Uniform('kb', 0.001, 0.001, 0.01, 0.001),
+                       spotpy.parameter.Uniform('ks', 0.01, 0.01, 0.01, 0.01),
+                       # spotpy.parameter.Uniform('ksat_fact', 0.1, 10.0, 0.1, 1.0),
+                       spotpy.parameter.Uniform('kr', 0.05, 0.05, 20.0, 0.05)
+                       ]
 
     def evaluation(self):
         """
@@ -101,7 +102,8 @@ class SpotpySetup(object):
         """
         self.logger.info('running simulation ' + str(vector))
         gwcoeffs = [200.0, vector[0], vector[1], 1.0001]  # initial storage, baseflow recession, deep seepage, minimum area
-        gwcoeffs = [200.0, 0.04, 0.0, 1.0001]  # hard-coded for testing, remove this for sensitivity and calibration
+        soil_prep(self.proj_dir, kr=vector[2])
+        # gwcoeffs = [200.0, 0.04, 0.0, 1.0001]  # hard-coded for testing, remove this for sensitivity and calibration
         result = run_project(self.proj_dir, numcpu=8, gwcoeff=gwcoeffs)
         self.logger.info('simulation complete')
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
@@ -139,8 +141,13 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.95, 0.95, 0.01, 0.95),  # crop coefficient
-                       spotpy.parameter.Uniform('kr', 0.005, 0.5, 0.001, 0.05)]  # vertical conductivity of restrictive layer
+        self.params = [spotpy.parameter.Uniform('kc', 0.8, 1.2, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 0.005, 1000, 0.001, 0.05),  # vertical conductivity of restrictive layer
+                       spotpy.parameter.Uniform('ks', 0.0, 0.2, 0.01, 0.01),  # deep seepage coefficient
+                       spotpy.parameter.Uniform('kb', 0.0, 0.2, 0.01, 0.04),  # baseflow coefficient
+                       spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
+                       spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
+                       ]
         self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
     def evaluation(self):
@@ -170,8 +177,9 @@ class SpotpySetupAnnual():
     def simulation(self, vector):
         self.logger.info('running simulation ' + str(vector))
         pmet_coeffs = [vector[0], 0.8]
-        soil_prep(self.proj_dir, kr=vector[1])
-        result = run_project(self.proj_dir, numcpu=8, pmet=pmet_coeffs)
+        gw_coeffs = [200.0, vector[3], vector[2], 1.0001]
+        soil_prep(self.proj_dir, kr=vector[1], field_cap=vector[4], pct_rock=vector[5])
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gw_coeffs, pmet=pmet_coeffs)
         self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
