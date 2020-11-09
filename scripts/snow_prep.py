@@ -32,7 +32,7 @@ class SnowOpts(object):
         )
 
 
-def gwcoeff_prep(runs_dir, rs_thresh=None, new_dens=None, set_dens=None):
+def snow_prep(runs_dir, rs_thresh=None, new_dens=None, set_dens=None):
     snow_opts = SnowOpts(rs_thresh=rs_thresh, new_dens=new_dens, set_dens=set_dens)
 
     with open(os.path.join(runs_dir, 'snow.txt'), 'w') as fp:

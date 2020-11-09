@@ -5,6 +5,7 @@ import logging
 import os
 from run_project import *
 from sol_prep import *
+from snow_prep import *
 
 
 def water_year_yield(df, date_col='DATE', q_col='MEAN_Q', conv=1.0):
@@ -145,8 +146,8 @@ class SpotpySetupAnnual():
                        spotpy.parameter.Uniform('kr', 0.005, 1000, 0.001, 0.05),  # vertical conductivity of restrictive layer
                        spotpy.parameter.Uniform('ks', 0.0, 0.2, 0.01, 0.01),  # deep seepage coefficient
                        spotpy.parameter.Uniform('kb', 0.0, 0.2, 0.01, 0.04),  # baseflow coefficient
-                       spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
-                       spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
+                       # spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
+                       # spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
                        ]
         self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
 
@@ -178,8 +179,9 @@ class SpotpySetupAnnual():
         self.logger.info('running simulation ' + str(vector))
         pmet_coeffs = [vector[0], 0.8]
         gw_coeffs = [200.0, vector[3], vector[2], 1.0001]
-        soil_prep(self.proj_dir, kr=vector[1], field_cap=vector[4], pct_rock=vector[5])
-        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gw_coeffs, pmet=pmet_coeffs)
+        snow_coeffs = [-2.0, 100.0, 250.0]
+        soil_prep(self.proj_dir, kr=vector[1], field_cap=None, pct_rock=None)
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gw_coeffs, pmet=pmet_coeffs, snow=snow_coeffs)
         self.logger.info('simulation complete ' + str(result))
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)

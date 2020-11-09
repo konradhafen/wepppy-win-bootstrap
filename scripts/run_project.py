@@ -21,6 +21,7 @@ from wy_calc import wy_calc
 from phosphorus_prep import phosphorus_prep
 from pmetpara_prep import pmetpara_prep
 from gwcoeff_prep import gwcoeff_prep
+from snow_prep import snow_prep
 from anu_wepp_management_mod import anu_wepp_management_mod
 
 NCPU = multiprocessing.cpu_count() - 1
@@ -114,7 +115,7 @@ def oncomplete(wepprun):
     print('  {} completed run in {}s\n'.format(_id, elapsed_time))
 
     
-def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8]):
+def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8], snow=[-2.0, 100.0, 250.0]):
     assert not wd.endswith('.py')
     print('Worknig directory in run_project', wd)
     assert exists(wd)
@@ -135,6 +136,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8]
     print('Crop coefficient', pmet[0])
     gwcoeff_prep(runs_dir, gwstorage=gwcoeff[0], bfcoeff=gwcoeff[1], dscoeff=gwcoeff[2], bfthreshold=gwcoeff[3])
     pmetpara_prep(runs_dir, pmet[0], pmet[1])
+    snow_prep(runs_dir, snow[0], snow[1], snow[2])
 
     hillslope_runs = glob(_join(runs_dir, 'p*.run'))
     hillslope_runs = [run for run in hillslope_runs if 'pw' not in run]

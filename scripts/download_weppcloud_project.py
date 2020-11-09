@@ -21,12 +21,12 @@ def download_weppcloud_project(run_id, destination, extract=True, remove=True, t
 
     """
     if tenmeter:
-        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/13/archive'.format(wd=run_id)
+        url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'.format(wd=run_id)
     else:
         url = 'https://wepp1.nkn.uidaho.edu/weppcloud/runs/{wd}/0/archive'.format(wd=run_id)
 
     fname = _join(destination, "{wd}.zip".format(wd=run_id))
-    print("attempting to download", run_id)
+    print("attempting to download", run_id, url)
 
     response = urlopen(url)
     data = response.read()
