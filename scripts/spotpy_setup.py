@@ -142,10 +142,10 @@ class SpotpySetupAnnual():
         self.end_year = end_year
         self.obs = self.process_observations(obs)
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.8, 1.2, 0.01, 0.95),  # crop coefficient
-                       spotpy.parameter.Uniform('kr', 0.005, 1000, 0.001, 0.05),  # vertical conductivity of restrictive layer
-                       spotpy.parameter.Uniform('ks', 0.0, 0.2, 0.01, 0.01),  # deep seepage coefficient
-                       spotpy.parameter.Uniform('kb', 0.0, 0.2, 0.01, 0.04),  # baseflow coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 0.88, 0.92, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 90.0, 90.0, 0.001, 0.05),  # vertical conductivity of restrictive layer
+                       spotpy.parameter.Uniform('ks', 0.001, 0.001, 0.01, 0.01),  # deep seepage coefficient
+                       spotpy.parameter.Uniform('kb', 0.002, 0.002, 0.01, 0.01),  # baseflow coefficient
                        # spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
                        # spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
                        ]

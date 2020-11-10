@@ -5,14 +5,17 @@ import matplotlib.pyplot as plt
 
 wd = "E:/konrad/Projects/usgs/hjandrews/wepp/hja-ws1-base/"
 output = os.path.join(wd, 'export/calibration_results_annual_sens6p.npy')
-nvars = 6
-nrow = 3
+nvars = 4
+nrow = 2
 ncol = 2
 xlabs = ['Crop coefficient', 'K (restrictive layer)', 'Deep seepage coefficient', 'Baseflow coefficient', 'Field capacity', 'Percent rock']
-xrange = [(0.8, 1.2), (0.005, 1000), (0.0, 0.2), (0.0, 0.2), (0.0, 0.8), (0, 80)]
+xrange = [(0.85, 0.95), (0.005, 100), (0.0, 0.003), (0.0, 0.003), (0.0, 0.8), (0, 80)]
 
 data = np.asarray(np.load(output).tolist())
-dat_plt = data[np.where((data[:, 0] > -15.0) & (data[:, 0] < 15.0))]
+# dat_plt = data[np.where((data[:, 0] > -10.0) & (data[:, 0] < 10.0) & (data[:, 1] < 1.0) & (data[:, 4] < 0.075))]
+dat_plt = data[np.where((data[:, 0] > -10.0) & (data[:, 0] < 10.0))]
+print(dat_plt.shape)
+print(np.round(dat_plt[:, :5], 5))
 
 f, ax = plt.subplots(nrow, ncol, sharex=False)
 
