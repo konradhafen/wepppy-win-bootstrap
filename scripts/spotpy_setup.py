@@ -41,11 +41,17 @@ class SpotpySetup(object):
         self.start_date = start_date
         self.end_date = end_date
         self.obs = self.process_observations(obs)
+        obs = obs.loc[(obs['DATE'] >= self.start_date)& (obs['DATE'] <= self.end_date)]
+        self.eval_water_year = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
+        # self.eval_water_year = self.eval_water_year.loc[(self.eval_water_year['year'] >= self.start_year) & (self.eval_water_year['year'] <= self.end_year)]
+        self.eval_water_year = self.eval_water_year['yield_m3'].to_numpy()
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kb', 0.001, 0.001, 0.01, 0.001),
-                       spotpy.parameter.Uniform('ks', 0.01, 0.01, 0.01, 0.01),
-                       # spotpy.parameter.Uniform('ksat_fact', 0.1, 10.0, 0.1, 1.0),
-                       spotpy.parameter.Uniform('kr', 0.05, 0.05, 20.0, 0.05)
+        self.params = [spotpy.parameter.Uniform('kc', 0.9, 0.9, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 90.0, 90.0, 0.001, 0.05), # vertical conductivity of restrictive layer
+                       spotpy.parameter.Uniform('ks', 0.00, 0.00, 0.01, 0.01),  # deep seepage coefficient
+                       spotpy.parameter.Uniform('kb', 0.00, 0.00, 0.01, 0.01),  # baseflow coefficient
+                       # spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
+                       # spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
                        ]
 
     def evaluation(self):
@@ -66,9 +72,12 @@ class SpotpySetup(object):
         Returns:
 
         """
-        self.logger.info('in objective function ' + str(type(simulation)) + str(type(evaluation)))
+        self.logger.info('in objective function ' + str(self.eval_water_year.shape) + str(self.sim_water_year.shape))
+        pb = spotpy.objectivefunctions.pbias(self.eval_water_year, self.sim_water_year)
         objectivefunction = spotpy.objectivefunctions.nashsutcliffe(evaluation, simulation)
-        return objectivefunction
+        obj_ln = spotpy.objectivefunctions.nashsutcliffe(np.log(evaluation + 0.0001), np.log(simulation + 0.0001))
+        return [pb, objectivefunction, obj_ln]
+        # return objectivefunction
 
     def parameters(self):
         """
@@ -102,10 +111,11 @@ class SpotpySetup(object):
 
         """
         self.logger.info('running simulation ' + str(vector))
-        gwcoeffs = [200.0, vector[0], vector[1], 1.0001]  # initial storage, baseflow recession, deep seepage, minimum area
-        soil_prep(self.proj_dir, kr=vector[2])
-        # gwcoeffs = [200.0, 0.04, 0.0, 1.0001]  # hard-coded for testing, remove this for sensitivity and calibration
-        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gwcoeffs)
+        pmet_coeffs = [vector[0], 0.8]
+        gw_coeffs = [200.0, vector[3], vector[2], 1.0001]
+        snow_coeffs = [-2.0, 100.0, 250.0]
+        soil_prep(self.proj_dir, kr=vector[1], field_cap=None, pct_rock=None)
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gw_coeffs, pmet=pmet_coeffs, snow=snow_coeffs)
         self.logger.info('simulation complete')
         fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
         df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
@@ -117,6 +127,9 @@ class SpotpySetup(object):
 
         df_wepp = df_wepp.loc[(df_wepp['date'] >= self.start_date) & (df_wepp['date'] <= self.end_date)]
         df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
+        self.sim_water_year = water_year_yield(df_wepp, 'date', 'Qvol')
+        self.sim_water_year = self.sim_water_year['yield_m3'].to_numpy()
+        self.logger.info(str(self.sim_water_year))
         return df_wepp['Qday'].to_numpy()
 
 

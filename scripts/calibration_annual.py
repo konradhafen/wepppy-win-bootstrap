@@ -57,8 +57,8 @@ if __name__ == "__main__":
     if os.path.exists(output + '.npy'):
         os.remove(output + '.npy')
     np.save(output + '.npy', results)
-    spotpy.analyser.plot_fast_sensitivity(results, number_of_sensitiv_pars=6)
-    spotpy.analyser.get_sensitivity_of_fast(results)
+    # spotpy.analyser.plot_fast_sensitivity(results, number_of_sensitiv_pars=6)
+    # spotpy.analyser.get_sensitivity_of_fast(results)
     # print('results', type(results))
     # print(results)
     # print(output + '.npy')
