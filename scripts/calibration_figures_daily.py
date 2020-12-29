@@ -29,8 +29,6 @@ plt.legend()
 plt.show()
 print(s.shape)
 s = s[s[:, 0].argsort()]
-print('sorted')
-print(s[:5, :])
 plt.plot(np.fabs(s[:, 0]/100.0), label='PBIAS')
 plt.plot(s[:, 1], label='NSE')
 # plt.plot(s[:, 2], label='NSE (log Q)')
