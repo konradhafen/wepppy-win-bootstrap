@@ -35,21 +35,21 @@ class SpotpySetup(object):
             date_format:
         """
         self.logger = logging.getLogger('spotpy_setup')
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.WARNING)
         self.proj_dir = proj_dir
         self.logger.info('project directory ' + str(self.proj_dir))
         self.start_date = start_date
         self.end_date = end_date
         self.obs = self.process_observations(obs)
-        obs = obs.loc[(obs['DATE'] >= self.start_date)& (obs['DATE'] <= self.end_date)]
+        obs = obs.loc[(obs['DATE'] >= self.start_date) & (obs['DATE'] <= self.end_date)]
         self.eval_water_year = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
         # self.eval_water_year = self.eval_water_year.loc[(self.eval_water_year['year'] >= self.start_year) & (self.eval_water_year['year'] <= self.end_year)]
         self.eval_water_year = self.eval_water_year['yield_m3'].to_numpy()
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.9, 0.9, 0.01, 0.95),  # crop coefficient
-                       spotpy.parameter.Uniform('kr', 90.0, 90.0, 0.001, 0.05), # vertical conductivity of restrictive layer
-                       spotpy.parameter.Uniform('ks', 0.00, 0.00, 0.01, 0.01),  # deep seepage coefficient
-                       spotpy.parameter.Uniform('kb', 0.00, 0.00, 0.01, 0.01),  # baseflow coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 0.8, 0.95, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kr', 0.0001, 0.5, 0.001, 0.05), # vertical conductivity of restrictive layer
+                       spotpy.parameter.Uniform('ks', 0.001, 0.1, 0.01, 0.01),  # deep seepage coefficient
+                       spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.01),  # baseflow coefficient
                        # spotpy.parameter.Uniform('fc', 0.0, 0.8, 0.01, 0.4),  # field capactiy
                        # spotpy.parameter.Uniform('pr', 0.0, 80.0, 0.11, 50.0),  # percent rock
                        ]

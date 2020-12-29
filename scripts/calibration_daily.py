@@ -32,7 +32,7 @@ if __name__ == "__main__":
     df_hist = df_hist.loc[df_hist['SITECODE'] == ws_code]  # subset to watershed of interest
 
     spot_setup = SpotpySetup(wd, start_date, end_date, df_hist)
-    sampler = spotpy.algorithms.mc(spot_setup, dbname=output + '.csv', dbformat='csv')
+    sampler = spotpy.algorithms.mc(spot_setup, dbname=output, dbformat='csv')
     sampler.sample(args.reps)
     results = sampler.getdata()
     if os.path.exists(output + '.npy'):
