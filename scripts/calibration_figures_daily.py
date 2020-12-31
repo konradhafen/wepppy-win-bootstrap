@@ -7,18 +7,18 @@ proj_base = "E:/konrad/Projects/usgs/hjandrews/wepp/"
 results_fn = "export/calibration_results_daily.npy"
 eval_fn = "export/calibration_results_daily_eval.npy"
 
-wsn = 1  # watershed number
+wsn = 2  # watershed number
 nyears = 2  # number of years to show
 n_pre_col = 7 # number of columns before simulation values begin
 irow = 0 # index of row to plot
 
-proj_dir = "hja-ws" + str(wsn) + "-base2"
+proj_dir = "hja-ws" + str(wsn) + "-base"
 simulation = np.asarray(np.load(os.path.join(proj_base, proj_dir, results_fn)).tolist())
 
 # Plot objective function values (pbias, nash-sutcliffe, nash-sutcliffe on log of Q)
 objs = simulation[:, :7]
 s = objs[objs[:, 0].argsort()]
-i = np.where(np.fabs(objs[:, 0]) < 15.0)
+i = np.where(np.fabs(objs[:, 0]) < 20.0)
 s = objs[i[0], :]
 # parkc,parkr,parks,parkb
 plt.plot(s[:, 3], label='kc')
@@ -31,7 +31,7 @@ print(s.shape)
 s = s[s[:, 0].argsort()]
 plt.plot(np.fabs(s[:, 0]/100.0), label='PBIAS')
 plt.plot(s[:, 1], label='NSE')
-# plt.plot(s[:, 2], label='NSE (log Q)')
+plt.plot(s[:, 2], label='NSE (log Q)')
 plt.ylabel('Value')
 plt.xlabel('Index')
 plt.legend()
