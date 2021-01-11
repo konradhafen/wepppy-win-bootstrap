@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from textwrap import wrap
+import spotpy
 
 
 proj_base = "E:/konrad/Projects/usgs/hjandrews/wepp/"
@@ -38,7 +39,7 @@ for proj_name in proj_names:
     simulation = np.asarray(np.load(os.path.join(proj_base, proj_name, results_fn)).tolist())
     evaluation = np.asarray(np.load(os.path.join(proj_base, proj_name, eval_fn)).tolist())
     if best_sims is None:
-        best_sims = np.empty((len(proj_names), simulation.shape[1]))
+        best_sims = np.full((len(proj_names), simulation.shape[1]), np.nan)
     if evals is None:
         evals = np.empty((len(proj_names), evaluation.shape[0]))
     evals[i_ws, :] = evaluation
@@ -54,6 +55,8 @@ for proj_name in proj_names:
         # print(proj_name, "ibest shape, value", i_best[0].shape, i_best)
         # print(simulation.shape, sim_obj[i_best[0], :].shape, best_sims[i_ws, :].shape)
         best_sims[i_ws, :] = sim_obj[i_best[0], :]
+        # print(evals[i_ws, :].shape, sim_obj[i_best[0], n_pre_col+1:][0].shape)
+        # print('pbias', spotpy.objectivefunctions.pbias(evals[i_ws, :], sim_obj[i_best[0], n_pre_col+1:][0]), sim_obj[i_best[0], 0])
     n = s[:, 3].shape[0]
     par_kc.extend(s[:, 3])
     par_kr.extend(s[:, 4])
@@ -102,10 +105,18 @@ plt.show()
 nrow = 4
 ncol = 2
 lw = 1.0
-fig, axs = plt.subplots(nrow, ncol, sharex=True)
+fig, axs = plt.subplots(nrow, ncol, figsize=(9, 7), sharex=True)
 for i in range(best_sims.shape[0]):
     row = i // ncol
     col = i % ncol
     axs[row, col].plot(evals[i, -365 * nyears:-1], linewidth=lw)
     axs[row, col].plot(best_sims[i, -365 * nyears:-1], linewidth=lw)
+    axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2))
+    if row == (nrow - 1):
+        axs[row, col].set_xlabel("Days")
+    if col == 0:
+        axs[row, col].set_ylabel("cfs")
+plt.subplots_adjust(hspace=0.3, wspace=0.1, bottom=0.08, top=0.95, right=0.95)
 plt.show()
+
+best_sims[:, :n_pre_col].tofile(os.path.join(proj_base, 'hja_all_calibration/gof_params.csv'), sep=",")
