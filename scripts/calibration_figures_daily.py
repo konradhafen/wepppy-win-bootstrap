@@ -111,12 +111,13 @@ for i in range(best_sims.shape[0]):
     col = i % ncol
     axs[row, col].plot(evals[i, -365 * nyears:-1], linewidth=lw)
     axs[row, col].plot(best_sims[i, -365 * nyears:-1], linewidth=lw)
-    axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2))
+    axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2), loc="left")
+    axs[row, col].annotate("PB: " + str(best_sims[i, 0]) + "\nNSE: " + str(best_sims[i, 1]) + "\nNSE (log Q): " + str(best_sims[i, 2]), xy=(0.02, 0.95), xycoords='axes fraction', verticalalignment='top')
     if row == (nrow - 1):
         axs[row, col].set_xlabel("Days")
     if col == 0:
         axs[row, col].set_ylabel("cfs")
-plt.subplots_adjust(hspace=0.3, wspace=0.1, bottom=0.08, top=0.95, right=0.95)
+plt.subplots_adjust(hspace=0.3, wspace=0.1, bottom=0.08, top=0.95, right=0.95, left=0.1)
 plt.show()
 
-best_sims[:, :n_pre_col].tofile(os.path.join(proj_base, 'hja_all_calibration/gof_params.csv'), sep=",")
+np.savetxt(os.path.join(proj_base, 'hja_all_calibration/gof_params.csv'), best_sims[:, :n_pre_col], delimiter=",")
