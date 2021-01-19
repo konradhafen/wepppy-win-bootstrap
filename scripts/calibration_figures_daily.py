@@ -47,7 +47,6 @@ for proj_name in proj_names:
     objs = simulation[:, :n_pre_col]
     s = objs[objs[:, 0].argsort()]
     i = np.where((np.fabs(objs[:, 0]) < pbias_thresh) & (objs[:, 1] > nse_thresh) & (objs[:, 2] > lnse_thresh))
-    # i = np.where(objs[:, 2] > 0.4)
     s = objs[i[0], :]
     sim_obj = simulation[i[0], :]
     if sim_obj.shape[0] > 0:
