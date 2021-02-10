@@ -35,7 +35,7 @@ class SpotpySetup(object):
             date_format:
         """
         self.logger = logging.getLogger('spotpy_setup')
-        self.logger.setLevel(logging.WARNING)
+        self.logger.setLevel(logging.INFO)
         self.proj_dir = proj_dir
         self.logger.info('project directory ' + str(self.proj_dir))
         self.start_date = start_date
@@ -46,7 +46,7 @@ class SpotpySetup(object):
         # self.eval_water_year = self.eval_water_year.loc[(self.eval_water_year['year'] >= self.start_year) & (self.eval_water_year['year'] <= self.end_year)]
         self.eval_water_year = self.eval_water_year['yield_m3'].to_numpy()
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.8, 0.95, 0.01, 0.95),  # crop coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 0.8, 1.15, 0.01, 0.95),  # crop coefficient
                        spotpy.parameter.Uniform('kr', 0.0001, 0.5, 0.001, 0.05), # vertical conductivity of restrictive layer
                        spotpy.parameter.Uniform('ks', 0.001, 0.1, 0.01, 0.01),  # deep seepage coefficient
                        spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.01),  # baseflow coefficient
@@ -72,8 +72,12 @@ class SpotpySetup(object):
         Returns:
 
         """
-        self.logger.info('in objective function ' + str(self.eval_water_year.shape) + str(self.sim_water_year.shape))
-        pb = spotpy.objectivefunctions.pbias(self.eval_water_year, self.sim_water_year)
+        # discard results from first year
+        self.logger.info('\nIn objective function, eval and sim shapes ' + str(evaluation.shape) + str(simulation.shape))
+        evaluation = evaluation[365:]
+        simulation = simulation[365:]
+        self.logger.info('After subset: ' + str(evaluation.shape) + str(simulation.shape))
+        pb = spotpy.objectivefunctions.pbias(evaluation, simulation)
         objectivefunction = spotpy.objectivefunctions.nashsutcliffe(evaluation, simulation)
         obj_ln = spotpy.objectivefunctions.nashsutcliffe(np.log(evaluation + 0.0001), np.log(simulation + 0.0001))
         return [pb, objectivefunction, obj_ln]

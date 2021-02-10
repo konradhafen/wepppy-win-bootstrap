@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from textwrap import wrap
-import spotpy
+import pandas as pd
 
 
 proj_base = "E:/konrad/Projects/usgs/hjandrews/wepp/"
@@ -11,11 +11,11 @@ eval_fn = "export/calibration_results_daily_eval.npy"
 
 pbias_thresh = 25.0
 lnse_thresh = 0.3
-nse_thresh = 0.4
+nse_thresh = 0.3
 nyears = 2  # number of years to show
 n_pre_col = 7 # number of columns before simulation values begin
 
-proj_names = ["hja-ws1-base2", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base"]
+proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base"]
 ws_nums = [1, 2, 3, 4, 5, 6, 7, 8]
 ws_id = [1, 2, 3, 6, 7, 8, 9, 10]
 
@@ -46,7 +46,12 @@ for proj_name in proj_names:
 
     objs = simulation[:, :n_pre_col]
     s = objs[objs[:, 0].argsort()]
+    minval = np.min(np.fabs(objs[:, 0]))
+    # print(proj_name, 'pbias min', objs[np.where(np.fabs(objs[:, 0]) == np.min(np.fabs(objs[:, 0]))), 0], 'nse max', np.max(objs[:, 1]), 'log nse max', np.max(objs[:, 2]))
     i = np.where((np.fabs(objs[:, 0]) < pbias_thresh) & (objs[:, 1] > nse_thresh) & (objs[:, 2] > lnse_thresh))
+    if len(i[0]) == 0:  # if not all parameter constraints are met, get parameters corresponding to max value of NSE log Q
+        i = np.where((objs[:, 2] == np.max(objs[:, 2])))
+
     s = objs[i[0], :]
     sim_obj = simulation[i[0], :]
     if sim_obj.shape[0] > 0:
@@ -119,4 +124,7 @@ for i in range(best_sims.shape[0]):
 plt.subplots_adjust(hspace=0.3, wspace=0.1, bottom=0.08, top=0.95, right=0.95, left=0.1)
 plt.show()
 
+df = pd.DataFrame(data=best_sims[:, :n_pre_col])
+df.columns = ['PBIAS', 'NSE', 'logNSE', 'CropCoef', 'KvRestrict', 'DeepSeep', 'BFRecess']
+df.to_csv(os.path.join(proj_base, 'hja_all_calibration/gof_params_table.csv'), index=False)
 np.savetxt(os.path.join(proj_base, 'hja_all_calibration/gof_params.csv'), best_sims[:, :n_pre_col], delimiter=",")
