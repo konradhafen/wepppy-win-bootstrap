@@ -46,7 +46,7 @@ class SpotpySetup(object):
         # self.eval_water_year = self.eval_water_year.loc[(self.eval_water_year['year'] >= self.start_year) & (self.eval_water_year['year'] <= self.end_year)]
         self.eval_water_year = self.eval_water_year['yield_m3'].to_numpy()
         self.logger.info('obs shape ' + str(self.obs.shape))
-        self.params = [spotpy.parameter.Uniform('kc', 0.8, 1.15, 0.01, 0.95),  # crop coefficient
+        self.params = [spotpy.parameter.Uniform('kc', 0.6, 0.8, 0.01, 0.95),  # crop coefficient
                        spotpy.parameter.Uniform('kr', 0.0001, 0.5, 0.001, 0.05), # vertical conductivity of restrictive layer
                        spotpy.parameter.Uniform('ks', 0.001, 0.1, 0.01, 0.01),  # deep seepage coefficient
                        spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.01),  # baseflow coefficient

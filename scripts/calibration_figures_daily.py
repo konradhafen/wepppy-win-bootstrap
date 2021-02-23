@@ -13,11 +13,11 @@ pbias_thresh = 25.0
 lnse_thresh = 0.3
 nse_thresh = 0.3
 nyears = 2  # number of years to show
-n_pre_col = 7 # number of columns before simulation values begin
+n_pre_col = 7  # number of columns before simulation values begin
 
-proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base"]
-ws_nums = [1, 2, 3, 4, 5, 6, 7, 8]
-ws_id = [1, 2, 3, 6, 7, 8, 9, 10]
+proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base", "hja-mack-base"]
+ws_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ws_id = [1, 2, 3, 6, 7, 8, 9, 10, "MACK"]
 
 par_kc = []
 par_ks = []
@@ -106,10 +106,10 @@ plt.subplots_adjust(left=0.22, right=0.95, hspace=0.1, bottom=0.08, top=0.95)
 plt.show()
 
 # hydrograph comparison plot
-nrow = 4
-ncol = 2
+nrow = 3
+ncol = 3
 lw = 1.0
-fig, axs = plt.subplots(nrow, ncol, figsize=(9, 7), sharex=True)
+fig, axs = plt.subplots(nrow, ncol, figsize=(9, 6), sharex=True)
 for i in range(best_sims.shape[0]):
     row = i // ncol
     col = i % ncol

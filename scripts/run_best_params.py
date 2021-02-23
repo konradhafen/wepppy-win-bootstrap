@@ -6,7 +6,7 @@ from snow_prep import *
 
 proj_base = "E:/konrad/Projects/usgs/hjandrews/wepp/"
 in_csv = os.path.join(proj_base, "hja_all_calibration/gof_params.csv")
-proj_names = ["hja-ws1-base2", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base"]
+proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base", "hja-mack-base"]
 
 params = np.loadtxt(in_csv, delimiter=",")
 for i in range(len(proj_names)):
