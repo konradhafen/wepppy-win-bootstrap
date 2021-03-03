@@ -213,3 +213,114 @@ class SpotpySetupAnnual():
         # self.logger.info(str(df_mod))
 
         return df_mod['yield_m3'].to_numpy()
+
+class SpotpySetupAnnual_ww():
+    def __init__(self, proj_dir, start_year, end_year, obs, date_format='%Y-%m-%d'):
+        """
+
+        Args:
+            proj_dir:
+            start_date:
+            end_date:
+            obs:
+            date_format:
+        """
+        self.logger = logging.getLogger('spotpy_setup')
+        self.logger.setLevel(logging.INFO)
+        self.proj_dir = proj_dir
+        self.logger.info('project directory ' + str(self.proj_dir))
+        self.start_year = start_year
+        self.end_year = end_year
+        self.obs = self.process_observations(obs)
+        self.logger.info('obs shape ' + str(self.obs.shape))
+        self.params = [spotpy.parameter.Uniform('kc', 0.8, 1.2, 0.01, 0.95),  # crop coefficient
+                       spotpy.parameter.Uniform('kb', 0.001, 0.1, 0.01, 0.01),  # baseflow coefficient
+                       ]
+        self.database = open(os.path.join(self.proj_dir, 'export/calibration_results_annual.csv'), 'w')
+
+    def evaluation(self):
+        return self.obs
+
+    def objectivefunction(self, simulation, evaluation):
+        # self.logger.info('sim ' + str(simulation))
+        # self.logger.info('eval ' + str(evaluation))
+        # objectivefunction = spotpy.objectivefunctions.pbias(evaluation, simulation)
+        agree = np.where(evaluation == simulation, 1, 0)
+        too_dry = np.where((evaluation == 1) & (simulation == 0), 1, 0)
+        too_wet = np.where((evaluation == 0) & (simulation == 1), 1, 0)
+        return [agree.mean(), too_dry.mean(), too_wet.mean()]
+
+    def parameters(self):
+        return spotpy.parameter.generate(self.params)
+
+    def process_observations(self, obs):
+        # self.logger.info(str(obs.head()))
+        # evaluation = water_year_yield(obs, conv=3600 * 24 * 0.0283168)  # convert from cfs to cubic meters
+        # evaluation = evaluation.loc[(evaluation['year'] >= self.start_year) & (evaluation['year'] <= self.end_year)]
+        obs['date_index'] = obs['year'] * 1000 + obs['doy']
+        self.df = obs.copy()
+        self.chns = obs['chn_id'].unique()
+        df_perm = obs.groupby(['chn_id', 'year'], as_index=False).agg({'value': ['count', 'sum']})
+        colnames = ['chn_id', 'year', 'obs_count', 'obs_sum']
+        df_perm.columns = colnames
+        df_perm['obs_perm'] = 0
+        df_perm.loc[df_perm['obs_count'] == df_perm['obs_sum'], 'obs_perm'] = 1
+        evaluation = df_perm['obs_perm'].to_numpy()
+        self.logger.info("EVALUATION: " + str(evaluation))
+        return evaluation
+
+    def save(self, objectivefunctions, parameter, simulations):
+        line = str(objectivefunctions)+','+str(parameter).strip('[]')+','+str(simulations.tolist()).strip('[]')+'\n'
+        self.logger.info('line' + line)
+        self.database.write(line)
+
+    def simulation(self, vector):
+        thresh = 0.0
+        self.logger.info('running simulation ' + str(vector))
+        pmet_coeffs = [vector[0], 0.8]
+        gw_coeffs = [200.0, vector[1], 0.0, 1.0001]
+        # pmet_coeffs = [0.95, 0.8]
+        # gw_coeffs = [200.0, 0.04, 0.0, 1.0001]
+        snow_coeffs = [-2.0, 100.0, 250.0]
+        # soil_prep(self.proj_dir, kr=vector[1], field_cap=None, pct_rock=None)
+        result = run_project(self.proj_dir, numcpu=8, gwcoeff=gw_coeffs, pmet=pmet_coeffs, snow=snow_coeffs)
+        self.logger.info('simulation complete ' + str(result))
+        fn_wepp = self.proj_dir + '/wepp/output/chnwb.txt'
+        df_wepp = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=25, header=None)
+        colnames_units = pd.read_table(fn_wepp, delim_whitespace=True, skiprows=21, header=0, nrows=1)
+        df_wepp.columns = colnames_units.columns
+        df_wepp['date_index'] = df_wepp['Y'] * 1000 + df_wepp['J']
+        # df_wepp = df_wepp.loc[df_wepp['OFE'] == df_wepp['OFE'].max()]
+        df_wepp['Qvol'] = (df_wepp['Q'] / 1000.0) * df_wepp['Area']
+        df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24))  # cubic meters/second
+        df_wepp = df_wepp.copy()
+        df_wepp_chns = df_wepp.loc[df_wepp['OFE'].isin(self.chns)].copy()
+        dfj = pd.merge(self.df, df_wepp_chns, how='left', left_on=['chn_id', 'date_index'],
+                       right_on=['OFE', 'date_index'])
+        self.logger.info('JOINED SHAPE: ' + str(dfj.shape))
+        dfj['wepp_value'] = 0.0
+        dfj.loc[dfj['Qday'] > thresh, 'wepp_value'] = 1.0
+        self.logger.info('QDAY MEAN: ' + str(dfj['Qday'].mean()))
+        self.logger.info('DFJ WPP VALUE: ' + str(dfj['wepp_value'].mean()))
+        dfj_annual = dfj.groupby(['chn_id', 'year'], as_index=False).agg(
+            {'value': ['count', 'sum'], 'wepp_value': ['count', 'sum']})
+        self.logger.info('ANNUAL SHAPE: ' + str(dfj_annual.shape))
+        colnames = ['chn_id', 'year', 'obs_count', 'obs_sum', 'wepp_count', 'wepp_sum']
+        dfj_annual.columns = colnames
+        dfj_annual['obs_perm'] = 0
+        dfj_annual['wepp_perm'] = 0
+        dfj_annual.loc[dfj_annual['obs_count'] == dfj_annual['obs_sum'], 'obs_perm'] = 1
+        dfj_annual.loc[dfj_annual['wepp_count'] == dfj_annual['wepp_sum'], 'wepp_perm'] = 1
+        self.logger.info('WEPP COUNTS: ' + str(dfj_annual['wepp_sum']))
+        dfj_annual['agree'] = 0
+        dfj_annual['too_dry'] = 0
+        dfj_annual['too_wet'] = 0
+        dfj_annual.loc[dfj_annual['obs_perm'] == dfj_annual['wepp_perm'], 'agree'] = 1
+        dfj_annual.loc[(dfj_annual['obs_perm'] == 1) & (dfj_annual['wepp_perm'] == 0), 'too_dry'] = 1
+        dfj_annual.loc[(dfj_annual['obs_perm'] == 0) & (dfj_annual['wepp_perm'] == 1), 'too_wet'] = 1
+        # df_wepp['Qday'] = (df_wepp['Qvol'] / (3600 * 24)) / 0.0283168  # cfs
+        # df_mod = water_year_yield(df_wepp, 'date', 'Qvol')
+        # df_mod = df_mod.loc[(df_mod['year'] >= self.start_year) & (df_mod['year'] <= self.end_year)]
+        # self.logger.info(str(df_mod))
+
+        return dfj_annual['wepp_perm'].to_numpy()

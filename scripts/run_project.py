@@ -112,7 +112,7 @@ def isint(x):
 def oncomplete(wepprun):
     status, _id, elapsed_time = wepprun.result()
     assert status
-    print('  {} completed run in {}s\n'.format(_id, elapsed_time))
+    # print('  {} completed run in {}s\n'.format(_id, elapsed_time))
 
     
 def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8], snow=[-2.0, 100.0, 250.0]):
