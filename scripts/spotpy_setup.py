@@ -297,21 +297,21 @@ class SpotpySetupAnnual_ww():
         df_wepp_chns = df_wepp.loc[df_wepp['OFE'].isin(self.chns)].copy()
         dfj = pd.merge(self.df, df_wepp_chns, how='left', left_on=['chn_id', 'date_index'],
                        right_on=['OFE', 'date_index'])
-        self.logger.info('JOINED SHAPE: ' + str(dfj.shape))
+        # self.logger.info('JOINED SHAPE: ' + str(dfj.shape))
         dfj['wepp_value'] = 0.0
         dfj.loc[dfj['Qday'] > thresh, 'wepp_value'] = 1.0
-        self.logger.info('QDAY MEAN: ' + str(dfj['Qday'].mean()))
-        self.logger.info('DFJ WPP VALUE: ' + str(dfj['wepp_value'].mean()))
+        # self.logger.info('QDAY MEAN: ' + str(dfj['Qday'].mean()))
+        # self.logger.info('DFJ WPP VALUE: ' + str(dfj['wepp_value'].mean()))
         dfj_annual = dfj.groupby(['chn_id', 'year'], as_index=False).agg(
             {'value': ['count', 'sum'], 'wepp_value': ['count', 'sum']})
-        self.logger.info('ANNUAL SHAPE: ' + str(dfj_annual.shape))
+        # self.logger.info('ANNUAL SHAPE: ' + str(dfj_annual.shape))
         colnames = ['chn_id', 'year', 'obs_count', 'obs_sum', 'wepp_count', 'wepp_sum']
         dfj_annual.columns = colnames
         dfj_annual['obs_perm'] = 0
         dfj_annual['wepp_perm'] = 0
         dfj_annual.loc[dfj_annual['obs_count'] == dfj_annual['obs_sum'], 'obs_perm'] = 1
         dfj_annual.loc[dfj_annual['wepp_count'] == dfj_annual['wepp_sum'], 'wepp_perm'] = 1
-        self.logger.info('WEPP COUNTS: ' + str(dfj_annual['wepp_sum']))
+        # self.logger.info('WEPP COUNTS: ' + str(dfj_annual['wepp_sum']))
         dfj_annual['agree'] = 0
         dfj_annual['too_dry'] = 0
         dfj_annual['too_wet'] = 0

@@ -31,6 +31,7 @@ if NCPU < 1:
 USE_MULTIPROCESSING = True
 
 wepp_exe = "../bin/WEPP2014.exe"
+wepp_exe = "../bin/wepppy-win-bootstrap.exe"
 
 perl_exe = r"C:\Perl64\perl\bin\perl.exe"
 daily_hillslopes_pl_path = "../bin/correct_daily_hillslopes.pl"
@@ -162,7 +163,7 @@ def run_project(wd, numcpu=1, gwcoeff=[200, 0.04, 0.0, 1.0001], pmet=[0.95, 0.8]
         else:
             status, _id, elapsed_time = run_hillslope(int(wepp_id), runs_dir)
             assert status
-            print('  {} completed run in {}s\n'.format(_id, elapsed_time))
+            # print('  {} completed run in {}s\n'.format(_id, elapsed_time))
 
     if USE_MULTIPROCESSING:
         wait(futures, return_when=FIRST_EXCEPTION)
