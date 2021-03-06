@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from textwrap import wrap
 import pandas as pd
+from datetime import datetime
 
 
 proj_base = "E:/konrad/Projects/usgs/hjandrews/wepp/"
@@ -14,10 +15,21 @@ lnse_thresh = 0.3
 nse_thresh = 0.3
 nyears = 2  # number of years to show
 n_pre_col = 7  # number of columns before simulation values begin
+cfs_to_Ls = 28.3168
+
+# create dates for plotting
+end_date = datetime.strptime("2019-09-30", "%Y-%m-%d")
+date_list = pd.date_range(end=end_date, periods=nyears * 365)
+# end_date_index = end_date.year * 1000 + end_date.timetuple().tm_yday
+# date_index = end_date - (np.arange(-365 * 2 + 1, 1) * -1) * np.timedelta64(1, 'D')
 
 proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base", "hja-mack-base"]
 ws_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ws_id = [1, 2, 3, 6, 7, 8, 9, 10, "MACK"]
+
+proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "hja-ws7-base", "hja-ws8-base", "hja-ws9-base", "hja-ws10-base"]
+ws_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+ws_id = [1, 2, 3, 6, 7, 8, 9, 10]
 
 par_kc = []
 par_ks = []
@@ -106,22 +118,23 @@ plt.subplots_adjust(left=0.22, right=0.95, hspace=0.1, bottom=0.08, top=0.95)
 plt.show()
 
 # hydrograph comparison plot
-nrow = 3
-ncol = 3
+nrow = 4
+ncol = 2
 lw = 1.0
-fig, axs = plt.subplots(nrow, ncol, figsize=(9, 6), sharex=True)
+fig, axs = plt.subplots(nrow, ncol, figsize=(9, 7), sharex=True)
 for i in range(best_sims.shape[0]):
     row = i // ncol
     col = i % ncol
-    axs[row, col].plot(evals[i, -365 * nyears:-1], linewidth=lw)
-    axs[row, col].plot(best_sims[i, -365 * nyears:-1], linewidth=lw)
+    axs[row, col].plot(date_list[:-1], evals[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw)
+    axs[row, col].plot(date_list[:-1], best_sims[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw, ls="--")
     axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2), loc="left")
     axs[row, col].annotate("PB: " + str(best_sims[i, 0]) + "\nNSE: " + str(best_sims[i, 1]) + "\nNSE (log Q): " + str(best_sims[i, 2]), xy=(0.02, 0.95), xycoords='axes fraction', verticalalignment='top')
     if row == (nrow - 1):
-        axs[row, col].set_xlabel("Days")
+        # axs[row, col].set_xlabel("Date")
+        axs[row, col].tick_params('x', labelrotation=45)
     if col == 0:
-        axs[row, col].set_ylabel("cfs")
-plt.subplots_adjust(hspace=0.3, wspace=0.1, bottom=0.08, top=0.95, right=0.95, left=0.1)
+        axs[row, col].set_ylabel("L/s")
+plt.subplots_adjust(hspace=0.3, wspace=0.13, bottom=0.12, top=0.95, right=0.95, left=0.1)
 plt.show()
 
 df = pd.DataFrame(data=best_sims[:, :n_pre_col])
