@@ -27,42 +27,56 @@ param_row = np.empty(len(proj_names))
 for i in range(len(proj_names)):
     ws_df = df_obs.loc[df_obs['wshed'] == i+1]
     doy = ws_df['doy'].to_numpy()
+    # subset to the portion of the year from April - October (inclusive)
     date_index = np.where((doy > 90) & (doy < 304))
     ws_df = ws_df.loc[(df_obs['doy'] > 90) & (ws_df['doy'] < 304)]
+    # get simulation and evaluation results
     simulation = np.asarray(np.load(os.path.join(proj_base, proj_names[i], results_fn)).tolist())
     evaluation = np.asarray(np.load(os.path.join(proj_base, proj_names[i], eval_fn)).tolist())
     # df = pd.read_csv(os.path.join(proj_base, proj_names[i], df_fn))
+    # subset evaluation data
     evaluation = evaluation[date_index[0]]
-
+    # get only simulation results (remove likelihood, parameter values, and chain number
     sims = simulation[:, n_pre_col:-1]
+    # subset simulations to date range
     sims = sims[:, date_index[0]]
 
     if accuracy_index is None:
+        # create array for adjusted accuracy values
         accuracy_index = np.empty((sims.shape[0], len(proj_names)))
+    # empty array for accuracy calculations
     accuracy = np.zeros((simulation.shape[0], 3))
-    accuracy[:, 0] = simulation[:, 0]
+    # number of observed wet and dry days
     eval_dry = np.where(evaluation == 0)
     eval_wet = np.where(evaluation == 1)
+    # simulated value on dry days
     sims_dry = sims[:, eval_dry[0]]
+    # accuracy of dry days
     accuracy[:, 1] = 1.0 - sims_dry.sum(axis=1) / len(eval_dry[0])
+    # simulated value on wet days
     sims_wet = sims[:, eval_wet[0]]
+    # accuracy of wet days
     accuracy[:, 2] = sims_wet.sum(axis=1) / len(eval_wet[0])
+    # overall accuracy
+    accuracy[:, 0] = (sims_wet.sum(axis=1) + (len(eval_dry[0]) - sims_dry.sum(axis=1))) / sims.shape[1]
+    # adjusted accuracy
     accuracy_index[:, i] = accuracy[:, 0] - np.fabs(accuracy[:, 1] - accuracy[:, 2])
-    # print(np.unique(accuracy, axis=0))
+    # removing duplicate entries for plotting
     plot_dat = np.unique(accuracy, axis=0)
-    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Non-permanent Accuracy")
-    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='b', alpha=alpha, s=pt_size, label="Permanent Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Dry Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='b', alpha=alpha, s=pt_size, label="Wet Accuracy")
     axs[i].scatter(plot_dat[:, 0], plot_dat[:, 0] - np.fabs(plot_dat[:, 1] - plot_dat[:, 2]), color='k', s=pt_size,
                    label="Adjusted Accuracy")
+    # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1] * plot_dat[:, 2], color='g', alpha=alpha, s=pt_size, label="Multiplied")
     axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(sims.shape[1]) + ")", fontsize=10)
     print('Row(s) of best parameter set', np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i]))[0][0])
     param_row[i] = np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i]))[0][0]
 
-    accuracy_index[np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i])), i]
+    # accuracy_index[np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i])), i]
 
 fig.subplots_adjust(bottom=0.15, hspace=0.4, top=0.95, right=0.95, left=0.1)
 plt.xlabel('Overall Accuracy')
-plt.xlim((0.63, 1.0))
+plt.xlim((0.25, 1.0))
 plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, -1.0))
 plt.show()
 
