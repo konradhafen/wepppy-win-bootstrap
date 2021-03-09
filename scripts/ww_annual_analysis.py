@@ -13,6 +13,7 @@ eval_fn = "export/calibration_results_daily_perm_eval.npy"
 df_fn = "export/calibration_results_daily_perm_annual_counts.csv"
 in_obs = r"E:\konrad\Projects\usgs\hjandrews\data\thermister\working\ww_thermister_observations_wepp.csv"
 df_obs = pd.read_csv(in_obs)
+df = None
 
 nparam = 2
 nlike = 1
@@ -48,15 +49,44 @@ for i in range(len(proj_names)):
     colnames = ['chn_id', 'year', 'eval']
     count_df = ws_df[colnames]
     count_df = count_df.groupby(['chn_id', 'year'], as_index=False).count()
-    print(count_df.head())
+    # print(count_df.head())
     for row in range(sims.shape[0]):
         ws_df[str(row)] = sims[row, :]
         colnames.append(str(row))
     # print('updated df columns', ws_df.columns)
     ws_df = ws_df[colnames]
     ws_df = ws_df.groupby(['chn_id', 'year'], as_index=False).sum()
-    ws_df['perm'] = np.where(count_df['eval'].to_numpy() == ws_df['eval'].to_numpy(), 1, 0)
-    print(ws_df.head())
+    wet_count = ws_df['eval'].to_numpy()
+    total_count = count_df['eval'].to_numpy()
+    perm = np.where(total_count == wet_count, 1, 0)
+    error_df = ws_df[['chn_id', 'year']].copy()
+    # ws_df['perm'] = np.where(count_df['eval'].to_numpy() == ws_df['eval'].to_numpy(), 1, 0)
+    # ws_df['total'] = count_df['eval']
+    accuracy = np.empty((sims.shape[0], 4))
+    for row in range(sims.shape[0]):
+        values = ws_df[str(row)].to_numpy()
+        result = np.zeros(values.shape)
+        result = np.where((perm == 1) & (total_count == values), 1, result)
+        result = np.where((perm == 0) & (total_count > values), 1, result)
+        error_df[str(row)] = result
+        accuracy[row, 0] = result.mean()  # Overall accuracy
+        accuracy[row, 1] = result[np.where(perm == 1)].mean()  # Permanent accuracy
+        accuracy[row, 2] = result[np.where(perm == 0)].mean()  # Non-permanent accuracy
+        accuracy[row, 3] = accuracy[row, 0] - np.fabs(accuracy[row, 1] - accuracy[row, 2])
+    # print(error_df.head())
+    plot_dat = np.unique(accuracy, axis=0)
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Permanent Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='b', alpha=alpha, s=pt_size, label="Non-Permanent Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 3], color='k', s=pt_size, label="Adjusted Accuracy")
+    # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 0] - np.fabs(plot_dat[:, 1] - plot_dat[:, 2]), color='k', s=pt_size, label="Adjusted Accuracy")
+    # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1] * plot_dat[:, 2], color='g', alpha=alpha, s=pt_size, label="Multiplied")
+    axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(ws_df.shape[0]) + ")", fontsize=10)
+fig.subplots_adjust(bottom=0.15, hspace=0.4, top=0.95, right=0.95, left=0.1)
+plt.xlabel('Overall Accuracy')
+plt.xlim((0.0, 1.0))
+plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, -1.0))
+plt.show()
+
 
 ########################################################################################################################
 # Section below is for use with WEPP runs that specifically calculated annual permanence
