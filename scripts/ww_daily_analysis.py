@@ -69,8 +69,8 @@ for i in range(len(proj_names)):
                    label="Adjusted Accuracy")
     # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1] * plot_dat[:, 2], color='g', alpha=alpha, s=pt_size, label="Multiplied")
     axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(sims.shape[1]) + ")", fontsize=10)
-    print('Row(s) of best parameter set', np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i]))[0][0])
     param_row[i] = np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i]))[0][0]
+    print('Row(s) of best parameter set', param_row[i], accuracy[int(param_row[i]), :])
 
     # accuracy_index[np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i])), i]
 
@@ -80,59 +80,59 @@ plt.xlim((0.25, 1.0))
 plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, -1.0))
 plt.show()
 
-for i in range(len(proj_names)):
-    df = pd.read_csv(os.path.join(proj_base, proj_names[i], df_fn))
-    # print(df[['obs_count', 'obs_sum', str(int(param_row[i]))]])
-    # print('years', df['year'].unique().shape)
-    sims = df.iloc[:, -100:].to_numpy()
-    counts = df.iloc[:, 4].to_numpy()
-    # print(df.columns[:6])
-    # print('sim shape', sims.shape, 'counts type', type(counts), 'counts shape', counts.shape)
-    sims_sub = (sims.transpose() - counts).transpose()
-    maxv = np.fabs(sims_sub).max()
-
-    df.iloc[:, -100:] = sims_sub
-    pt = pd.pivot_table(df, values=str(int(param_row[i])), index='chn_id', columns='year')
-    fig_array = pt.to_numpy()
-    chns = df['chn_id'].unique()
-    years = df['year'].unique()
-
-    df['perm'] = 0
-    df['mod_perm'] = 0
-    df.loc[df['obs_count'] == df['obs_sum'], 'perm'] = 1
-    df.loc[df['obs_count'] == df[str(int(param_row[i]))], 'mod_perm'] = 1
-    df['perm_dif'] = 0
-    df.loc[(df['perm'] == 0) & (df['mod_perm'] == 1), 'perm_dif'] = 1
-    df.loc[(df['perm'] == 1) & (df['mod_perm'] == 0), 'perm_dif'] = -1
-    pt = pd.pivot_table(df, values='perm', index='chn_id', columns='year')
-    perm_array = pt.to_numpy()
-    pt = pd.pivot_table(df, values='perm_dif', index='chn_id', columns='year')
-    change_array = pt.to_numpy()
-    plt.figure(figsize=(4, 4))
-    # plt.imshow(fig_array, aspect='auto', interpolation='none', cmap='RdBu', vmin=maxv*(-1.0), vmax=maxv)
-    plt.imshow(change_array, aspect='auto', interpolation='none', cmap='bwr_r', vmin=-1, vmax=1)
-    plt.yticks(np.arange(len(chns)), chns.astype(np.int))
-    plt.xticks(np.arange(len(years)), years)
-
-    for row in range(len(chns)):
-        for col in range(len(years)):
-            if change_array[row, col] >= -1:
-                text = plt.text(col, row, np.abs(fig_array[row, col].astype(int)), ha="center", va="center", color="w", fontweight='bold', fontsize='14')
-            # elif perm_array[row, col] == 0:
-            #     text = plt.text(col, row, np.abs(fig_array[row, col].astype(int)), ha="center", va="center", color="k", fontweight='bold', fontsize='14')
-
-    np.where(perm_array == 0, np.nan, 1)
-
-    plt.imshow(np.full(perm_array.shape, 1), aspect='auto', interpolation='none', cmap='Greys', vmin=0, vmax=1, alpha=0.2)
-            # if fig_array[row, col] < -366:
-            #     text = plt.text(col, row, "", ha="center", va="center", color="w")
-    # for chn in chns[:-1]:
-    #     plt.axhline(y=chn - 0.5, color='k')
-    # plt.yticks(chns - 1, chns)
-    # plt.ylabel('Channel ID')
-    # plt.xlabel('Parameter Set')
-    # plt.title('Willow-Whitehorse ' + str(i+1).zfill(2))
-    # plt.colorbar()
-    # plt.subplots_adjust(left=0.05, right=0.99)
-    # plt.savefig(os.path.join(fig_base, labels[i] + ".png"), dpi=300)
-    plt.show()
+# for i in range(len(proj_names)):
+#     df = pd.read_csv(os.path.join(proj_base, proj_names[i], df_fn))
+#     # print(df[['obs_count', 'obs_sum', str(int(param_row[i]))]])
+#     # print('years', df['year'].unique().shape)
+#     sims = df.iloc[:, -100:].to_numpy()
+#     counts = df.iloc[:, 4].to_numpy()
+#     # print(df.columns[:6])
+#     # print('sim shape', sims.shape, 'counts type', type(counts), 'counts shape', counts.shape)
+#     sims_sub = (sims.transpose() - counts).transpose()
+#     maxv = np.fabs(sims_sub).max()
+#
+#     df.iloc[:, -100:] = sims_sub
+#     pt = pd.pivot_table(df, values=str(int(param_row[i])), index='chn_id', columns='year')
+#     fig_array = pt.to_numpy()
+#     chns = df['chn_id'].unique()
+#     years = df['year'].unique()
+#
+#     df['perm'] = 0
+#     df['mod_perm'] = 0
+#     df.loc[df['obs_count'] == df['obs_sum'], 'perm'] = 1
+#     df.loc[df['obs_count'] == df[str(int(param_row[i]))], 'mod_perm'] = 1
+#     df['perm_dif'] = 0
+#     df.loc[(df['perm'] == 0) & (df['mod_perm'] == 1), 'perm_dif'] = 1
+#     df.loc[(df['perm'] == 1) & (df['mod_perm'] == 0), 'perm_dif'] = -1
+#     pt = pd.pivot_table(df, values='perm', index='chn_id', columns='year')
+#     perm_array = pt.to_numpy()
+#     pt = pd.pivot_table(df, values='perm_dif', index='chn_id', columns='year')
+#     change_array = pt.to_numpy()
+#     plt.figure(figsize=(4, 4))
+#     # plt.imshow(fig_array, aspect='auto', interpolation='none', cmap='RdBu', vmin=maxv*(-1.0), vmax=maxv)
+#     plt.imshow(change_array, aspect='auto', interpolation='none', cmap='bwr_r', vmin=-1, vmax=1)
+#     plt.yticks(np.arange(len(chns)), chns.astype(np.int))
+#     plt.xticks(np.arange(len(years)), years)
+#
+#     for row in range(len(chns)):
+#         for col in range(len(years)):
+#             if change_array[row, col] >= -1:
+#                 text = plt.text(col, row, np.abs(fig_array[row, col].astype(int)), ha="center", va="center", color="w", fontweight='bold', fontsize='14')
+#             # elif perm_array[row, col] == 0:
+#             #     text = plt.text(col, row, np.abs(fig_array[row, col].astype(int)), ha="center", va="center", color="k", fontweight='bold', fontsize='14')
+#
+#     np.where(perm_array == 0, np.nan, 1)
+#
+#     plt.imshow(np.full(perm_array.shape, 1), aspect='auto', interpolation='none', cmap='Greys', vmin=0, vmax=1, alpha=0.2)
+#             # if fig_array[row, col] < -366:
+#             #     text = plt.text(col, row, "", ha="center", va="center", color="w")
+#     # for chn in chns[:-1]:
+#     #     plt.axhline(y=chn - 0.5, color='k')
+#     # plt.yticks(chns - 1, chns)
+#     # plt.ylabel('Channel ID')
+#     # plt.xlabel('Parameter Set')
+#     # plt.title('Willow-Whitehorse ' + str(i+1).zfill(2))
+#     # plt.colorbar()
+#     # plt.subplots_adjust(left=0.05, right=0.99)
+#     # plt.savefig(os.path.join(fig_base, labels[i] + ".png"), dpi=300)
+#     plt.show()
