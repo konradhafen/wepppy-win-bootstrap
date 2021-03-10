@@ -10,7 +10,7 @@ proj_names = ["hja-ws1-base", "hja-ws2-base", "hja-ws3-base", "hja-ws6-base", "h
 
 params = np.loadtxt(in_csv, delimiter=",")
 for i in range(len(proj_names)):
-    print('params, kc:', params[i, 3], 'kb:', params[i, 4], 'ks:', params[i, 5], 'kr:', params[i, 6])
+    print(proj_names[i], 'params, kc:', params[i, 3], 'kb:', params[i, 4], 'ks:', params[i, 5], 'kr:', params[i, 6])
     pmet_coeffs = [params[i, 3], 0.8]
     gw_coeffs = [200.0, params[i, 4], params[i, 5], 1.0001]
     snow_coeffs = [-2.0, 100.0, 250.0]

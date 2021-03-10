@@ -29,9 +29,11 @@ df_obs = pd.read_csv(in_obs)
 nparam = 2
 nlike = 1
 n_pre_col = nparam + nlike
+day_thresh = 5  # number of days required for a stream to be non-permanent
 
 best_daily_params = [6, 29, 59, 79]  # from ww_daily_analysis script
 best_annual_params = [91, 54, 76, 93]  # row of best params for annual accuracy from ww_annual_analysis script
+param_set = best_annual_params
 
 proj_names = ['ww-ws1-base', 'ww-ws2-base', 'ww-ws3-base', 'ww-ws4-base']
 
@@ -66,20 +68,20 @@ for i in range(len(proj_names)):
     ws_df['total'] = count_df['eval'].to_numpy()
     ws_df['perm'] = 0
     ws_df.loc[ws_df['total'] == ws_df['eval'], 'perm'] = 1
-    daily_df = ws_df[['chn_id', 'year', 'perm', 'total', str(best_daily_params[i])]]
+    daily_df = ws_df[['chn_id', 'year', 'perm', 'total', str(param_set[i])]]
     pt = pd.pivot_table(ws_df, values='eval', index='chn_id', columns='year')
     eval_array = pt.to_numpy()
     pt = pd.pivot_table(ws_df, values='total', index='chn_id', columns='year')
     total_array = pt.to_numpy()  # total number of observations for each reach in each year
-    pt = pd.pivot_table(ws_df, values=str(best_daily_params[i]), index='chn_id', columns='year')
+    pt = pd.pivot_table(ws_df, values=str(param_set[i]), index='chn_id', columns='year')
     count_array = pt.to_numpy()  # number of days modeled wet
     pt = pd.pivot_table(ws_df, values='perm', index='chn_id', columns='year')
     perm_array = pt.to_numpy()  # permanence classification from thermistor data
     plot_array = np.zeros(perm_array.shape)  # array to use for plot
     plot_array = np.where(perm_array == 0, -1, plot_array)  # non perm get value of -1
     plot_array = np.where(perm_array == 1, 1, plot_array)  # perm get value of 1
-    plot_array = np.where((perm_array == 1) & (count_array < total_array), -2, plot_array)  # if perm modeled as non perm get value -2
-    plot_array = np.where((perm_array == 0) & (count_array == total_array), -2, plot_array)  # if non perm modeled as perm get value 2
+    plot_array = np.where((perm_array == 1) & (count_array < (total_array-day_thresh)), -2, plot_array)  # if perm modeled as non perm get value -2
+    plot_array = np.where((perm_array == 0) & (count_array >= (total_array-day_thresh)), 2, plot_array)  # if non perm modeled as perm get value 2
     value_array = 1.0 - (np.fabs(count_array - eval_array) * 1.0 / total_array * 1.0)
 
     chns = ws_df['chn_id'].unique()

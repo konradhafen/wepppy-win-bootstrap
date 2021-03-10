@@ -121,12 +121,12 @@ plt.show()
 nrow = 4
 ncol = 2
 lw = 1.0
-fig, axs = plt.subplots(nrow, ncol, figsize=(9, 7), sharex=True)
+fig, axs = plt.subplots(nrow, ncol, figsize=(7, 7), sharex=True)
 for i in range(best_sims.shape[0]):
     row = i // ncol
     col = i % ncol
     axs[row, col].plot(date_list[:-1], evals[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw)
-    axs[row, col].plot(date_list[:-1], best_sims[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw, ls="--")
+    axs[row, col].plot(date_list[:-1], best_sims[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw+0.25, ls="--")
     axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2), loc="left")
     axs[row, col].annotate("PB: " + str(best_sims[i, 0]) + "\nNSE: " + str(best_sims[i, 1]) + "\nNSE (log Q): " + str(best_sims[i, 2]), xy=(0.02, 0.95), xycoords='axes fraction', verticalalignment='top')
     if row == (nrow - 1):
@@ -134,7 +134,7 @@ for i in range(best_sims.shape[0]):
         axs[row, col].tick_params('x', labelrotation=45)
     if col == 0:
         axs[row, col].set_ylabel("L/s")
-plt.subplots_adjust(hspace=0.3, wspace=0.13, bottom=0.12, top=0.95, right=0.95, left=0.1)
+plt.subplots_adjust(hspace=0.3, wspace=0.14, bottom=0.1, top=0.96, right=0.98, left=0.08)
 plt.show()
 
 df = pd.DataFrame(data=best_sims[:, :n_pre_col])

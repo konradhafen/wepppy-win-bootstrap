@@ -75,8 +75,8 @@ for i in range(len(proj_names)):
         accuracy[row, 3] = accuracy[row, 0] - np.fabs(accuracy[row, 1] - accuracy[row, 2])
     # print(error_df.head())
     plot_dat = np.unique(accuracy, axis=0)
-    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Permanent Accuracy")
-    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='b', alpha=alpha, s=pt_size, label="Non-Permanent Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='b', alpha=alpha, s=pt_size, label="Permanent Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='r', alpha=alpha, s=pt_size, label="Non-permanent Accuracy")
     axs[i].scatter(plot_dat[:, 0], plot_dat[:, 3], color='k', s=pt_size, label="Adjusted Accuracy")
     axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(ws_df.shape[0]) + ")", fontsize=10)
     br = np.where(accuracy[:, 3] == np.max(accuracy[:, 3]))[0][0]
