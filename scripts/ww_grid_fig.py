@@ -29,11 +29,11 @@ df_obs = pd.read_csv(in_obs)
 nparam = 2
 nlike = 1
 n_pre_col = nparam + nlike
-day_thresh = 5  # number of days required for a stream to be non-permanent
+day_thresh = 0  # number of days required for a stream to be non-permanent
 
 best_daily_params = [6, 29, 59, 79]  # from ww_daily_analysis script
 best_annual_params = [91, 54, 76, 93]  # row of best params for annual accuracy from ww_annual_analysis script
-param_set = best_annual_params
+param_set = best_daily_params
 
 proj_names = ['ww-ws1-base', 'ww-ws2-base', 'ww-ws3-base', 'ww-ws4-base']
 
@@ -70,6 +70,8 @@ for i in range(len(proj_names)):
     ws_df.loc[ws_df['total'] == ws_df['eval'], 'perm'] = 1
     daily_df = ws_df[['chn_id', 'year', 'perm', 'total', str(param_set[i])]]
     pt = pd.pivot_table(ws_df, values='eval', index='chn_id', columns='year')
+    years = pt.columns
+    chns = pt.index
     eval_array = pt.to_numpy()
     pt = pd.pivot_table(ws_df, values='total', index='chn_id', columns='year')
     total_array = pt.to_numpy()  # total number of observations for each reach in each year
@@ -84,8 +86,8 @@ for i in range(len(proj_names)):
     plot_array = np.where((perm_array == 0) & (count_array >= (total_array-day_thresh)), 2, plot_array)  # if non perm modeled as perm get value 2
     value_array = 1.0 - (np.fabs(count_array - eval_array) * 1.0 / total_array * 1.0)
 
-    chns = ws_df['chn_id'].unique()
-    years = ws_df['year'].unique()
+    # chns = ws_df['chn_id'].unique()
+    # years = ws_df['year'].unique()
 
     plt.figure(figsize=(4, 4))
     plt.imshow(plot_array, aspect='auto', interpolation='none', cmap='bwr_r', vmin=-2, vmax=2)
