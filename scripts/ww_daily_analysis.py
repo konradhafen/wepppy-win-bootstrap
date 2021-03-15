@@ -23,6 +23,7 @@ pt_size = 20.0
 alpha = 0.5
 accuracy_index = None
 param_row = np.empty(len(proj_names))
+best_param_rows = [9, 29, 85, 91]
 
 for i in range(len(proj_names)):
     ws_df = df_obs.loc[df_obs['wshed'] == i+1]
@@ -36,6 +37,7 @@ for i in range(len(proj_names)):
     # df = pd.read_csv(os.path.join(proj_base, proj_names[i], df_fn))
     # subset evaluation data
     evaluation = evaluation[date_index[0]]
+    print('param values ws', i, simulation[best_param_rows[i], :n_pre_col])
     # get only simulation results (remove likelihood, parameter values, and chain number
     sims = simulation[:, n_pre_col:-1]
     # subset simulations to date range
@@ -59,14 +61,14 @@ for i in range(len(proj_names)):
     accuracy[:, 2] = sims_wet.sum(axis=1) / len(eval_wet[0])
     # overall accuracy
     accuracy[:, 0] = (sims_wet.sum(axis=1) + (len(eval_dry[0]) - sims_dry.sum(axis=1))) / sims.shape[1]
-    # adjusted accuracy
-    accuracy_index[:, i] = accuracy[:, 0] - np.fabs(accuracy[:, 1] - accuracy[:, 2])
+    # adjusted/weighted accuracy
+    accuracy_index[:, i] = (accuracy[:, 1] * 0.5) + (accuracy[:, 2] * 0.5)
     # removing duplicate entries for plotting
     plot_dat = np.unique(accuracy, axis=0)
     axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Dry Accuracy")
     axs[i].scatter(plot_dat[:, 0], plot_dat[:, 2], color='b', alpha=alpha, s=pt_size, label="Wet Accuracy")
-    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 0] - np.fabs(plot_dat[:, 1] - plot_dat[:, 2]), color='k', s=pt_size,
-                   label="Adjusted Accuracy")
+    axs[i].scatter(plot_dat[:, 0], plot_dat[:, 0] - np.fabs(plot_dat[:, 1] - plot_dat[:, 2]), color='k', s=pt_size, label="Adjusted Accuracy")
+    axs[i].set_ylabel('Accuracy Value')
     # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1] * plot_dat[:, 2], color='g', alpha=alpha, s=pt_size, label="Multiplied")
     axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(sims.shape[1]) + ")", fontsize=10)
     param_row[i] = np.where(accuracy_index[:, i] == np.max(accuracy_index[:, i]))[0][0]

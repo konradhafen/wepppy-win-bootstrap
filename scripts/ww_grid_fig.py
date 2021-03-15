@@ -33,7 +33,10 @@ day_thresh = 0  # number of days required for a stream to be non-permanent
 
 best_daily_params = [6, 29, 59, 79]  # from ww_daily_analysis script
 best_annual_params = [91, 54, 76, 93]  # row of best params for annual accuracy from ww_annual_analysis script
-param_set = best_daily_params
+best_threshold_days = [0, 8, 3, 2]  # day thresholds from ww_annual_analysis script
+best_annual_params_thresh = [91, 14, 11, 93]  # row of best params for annual accuracy with a day threshold from ww_annual_analysis script
+
+param_set = best_annual_params_thresh
 
 proj_names = ['ww-ws1-base', 'ww-ws2-base', 'ww-ws3-base', 'ww-ws4-base']
 
@@ -43,7 +46,7 @@ for i in range(len(proj_names)):
     # subset to the portion of the year from April - October (inclusive)
     date_index = np.where((doy > 90) & (doy < 304))
     ws_df = ws_df.loc[(df_obs['doy'] > 90) & (ws_df['doy'] < 304)]
-    print('df shape', ws_df.shape)
+    # print('df shape', ws_df.shape)
     # get simulation and evaluation results
     simulation = np.asarray(np.load(os.path.join(proj_base, proj_names[i], results_fn)).tolist())
     evaluation = np.asarray(np.load(os.path.join(proj_base, proj_names[i], eval_fn)).tolist())
@@ -66,6 +69,8 @@ for i in range(len(proj_names)):
     ws_df = ws_df[colnames]
     ws_df = ws_df.groupby(['chn_id', 'year'], as_index=False).sum()
     ws_df['total'] = count_df['eval'].to_numpy()
+    # print(ws_df['total'].to_numpy().astype(np.int))
+    # print(ws_df[str(param_set[i])].to_numpy().astype(np.int))
     ws_df['perm'] = 0
     ws_df.loc[ws_df['total'] == ws_df['eval'], 'perm'] = 1
     daily_df = ws_df[['chn_id', 'year', 'perm', 'total', str(param_set[i])]]
@@ -77,17 +82,19 @@ for i in range(len(proj_names)):
     total_array = pt.to_numpy()  # total number of observations for each reach in each year
     pt = pd.pivot_table(ws_df, values=str(param_set[i]), index='chn_id', columns='year')
     count_array = pt.to_numpy()  # number of days modeled wet
+    # print(total_array - count_array)
     pt = pd.pivot_table(ws_df, values='perm', index='chn_id', columns='year')
     perm_array = pt.to_numpy()  # permanence classification from thermistor data
+    mod_array = np.zeros(perm_array.shape)
+    mod_array = np.where(count_array >= (total_array - best_threshold_days[i]), 1, 0)
+    # print(mod_array)
+    # print(perm_array)
     plot_array = np.zeros(perm_array.shape)  # array to use for plot
     plot_array = np.where(perm_array == 0, -1, plot_array)  # non perm get value of -1
     plot_array = np.where(perm_array == 1, 1, plot_array)  # perm get value of 1
-    plot_array = np.where((perm_array == 1) & (count_array < (total_array-day_thresh)), -2, plot_array)  # if perm modeled as non perm get value -2
-    plot_array = np.where((perm_array == 0) & (count_array >= (total_array-day_thresh)), 2, plot_array)  # if non perm modeled as perm get value 2
-    value_array = 1.0 - (np.fabs(count_array - eval_array) * 1.0 / total_array * 1.0)
-
-    # chns = ws_df['chn_id'].unique()
-    # years = ws_df['year'].unique()
+    plot_array = np.where((perm_array == 1) & (count_array < (total_array - best_threshold_days[i])), -2, plot_array)  # if perm modeled as non perm get value -2
+    plot_array = np.where((perm_array == 0) & (count_array >= (total_array - best_threshold_days[i])), 2, plot_array)  # if non perm modeled as perm get value 2
+    value_array = 1.0 - (np.fabs(count_array - eval_array) / total_array)
 
     plt.figure(figsize=(4, 4))
     plt.imshow(plot_array, aspect='auto', interpolation='none', cmap='bwr_r', vmin=-2, vmax=2)
