@@ -127,7 +127,7 @@ for i in range(best_sims.shape[0]):
     col = i % ncol
     axs[row, col].plot(date_list[:-1], evals[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw)
     axs[row, col].plot(date_list[:-1], best_sims[i, -365 * nyears:-1] * cfs_to_Ls, linewidth=lw+0.25, ls="--")
-    axs[row, col].set_title("WS" + str(ws_id[i]).zfill(2), loc="left")
+    axs[row, col].set_title("HJA" + str(ws_id[i]).zfill(2), loc="left")
     axs[row, col].annotate("PB: " + str(best_sims[i, 0]) + "\nNSE: " + str(best_sims[i, 1]) + "\nNSE (log Q): " + str(best_sims[i, 2]), xy=(0.02, 0.95), xycoords='axes fraction', verticalalignment='top')
     if row == (nrow - 1):
         # axs[row, col].set_xlabel("Date")

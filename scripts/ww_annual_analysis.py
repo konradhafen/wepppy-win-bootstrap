@@ -32,6 +32,7 @@ thresh_array = np.full((n_threshold_days*4, 7), -1.0, dtype=np.float)
 best_threshold_days = [0, 8, 3, 2]  # number of theshold days for best accuracy, identified from the graph created running this script
 best_param_rows_thresh = [91, 14, 11, 93]  # index of best params for corresponding threshold days, idnetified from the variable above
 best_param_rows = [91, 54, 76, 93]
+best_daily_params = [6, 29, 59, 79]
 
 for i in range(len(proj_names)):
     ws_df = df_obs.loc[df_obs['wshed'] == i+1]
@@ -119,6 +120,7 @@ for i in range(len(proj_names)):
     axs[i].set_title('Willow-Whitehorse ' + str(i + 1).zfill(2) + ' (n=' + str(ws_df.shape[0]) + ")", fontsize=10)
     br = np.where(accuracy[:, 3] == np.max(accuracy[:, 3]))[0][0]
     print('Row of best parameter set', br, accuracy[br, :])
+    print('Row of best daily parameter set', accuracy[best_daily_params[i], :])
     # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 0] - np.fabs(plot_dat[:, 1] - plot_dat[:, 2]), color='k', s=pt_size, label="Adjusted Accuracy")
     # axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1] * plot_dat[:, 2], color='g', alpha=alpha, s=pt_size, label="Multiplied")
 fig.subplots_adjust(bottom=0.15, hspace=0.4, top=0.95, right=0.95, left=0.13)
