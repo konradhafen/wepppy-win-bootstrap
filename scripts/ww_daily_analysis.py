@@ -23,7 +23,8 @@ pt_size = 20.0
 alpha = 0.5
 accuracy_index = None
 param_row = np.empty(len(proj_names))
-best_param_rows = [9, 29, 85, 91]
+best_param_rows = [9, 29, 85, 91]  # weighted accuracy
+best_param_rows = [6, 29, 59, 79]  # adjusted accuracy
 
 for i in range(len(proj_names)):
     ws_df = df_obs.loc[df_obs['wshed'] == i+1]
@@ -62,7 +63,8 @@ for i in range(len(proj_names)):
     # overall accuracy
     accuracy[:, 0] = (sims_wet.sum(axis=1) + (len(eval_dry[0]) - sims_dry.sum(axis=1))) / sims.shape[1]
     # adjusted/weighted accuracy
-    accuracy_index[:, i] = (accuracy[:, 1] * 0.5) + (accuracy[:, 2] * 0.5)
+    # accuracy_index[:, i] = (accuracy[:, 1] * 0.5) + (accuracy[:, 2] * 0.5)  # weighted accuracy
+    accuracy_index[:, i] = accuracy[:, 0] - np.fabs(accuracy[:, 1] - accuracy[:, 2])  # adjusted accuracy
     # removing duplicate entries for plotting
     plot_dat = np.unique(accuracy, axis=0)
     axs[i].scatter(plot_dat[:, 0], plot_dat[:, 1], color='r', alpha=alpha, s=pt_size, label="Dry Accuracy")
